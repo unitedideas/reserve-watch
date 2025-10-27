@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -65,6 +66,29 @@ func main() {
 
 	c.Start()
 	util.InfoLogger.Println("Cron scheduler started. Press Ctrl+C to exit.")
+
+	// Start health check server for Railway
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	
+	go func() {
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, "✅ Reserve Watch is running!\n\nStatus: Active\nScheduler: Running\nNext check: Daily at 9:00 AM\n")
+		})
+		
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"status":"healthy","service":"reserve-watch"}`)
+		})
+		
+		util.InfoLogger.Printf("Health check server listening on port %s", port)
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			util.ErrorLogger.Printf("Health check server error: %v", err)
+		}
+	}()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
