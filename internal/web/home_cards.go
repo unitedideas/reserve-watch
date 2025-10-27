@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"reserve-watch/internal/analytics"
-	"reserve-watch/internal/store"
 )
 
 // buildDataSourceCards creates all homepage data cards with signal analysis
