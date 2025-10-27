@@ -9,13 +9,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/robfig/cron/v3"
 	"reserve-watch/internal/compose"
 	"reserve-watch/internal/config"
 	"reserve-watch/internal/ingest"
 	"reserve-watch/internal/publish"
 	"reserve-watch/internal/store"
 	"reserve-watch/internal/util"
+
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -72,18 +73,18 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	
+
 	go func() {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "✅ Reserve Watch is running!\n\nStatus: Active\nScheduler: Running\nNext check: Daily at 9:00 AM\n")
+			fmt.Fprintf(w, "✅ Reserve Watch is running!\n\nStatus: Active\nScheduler: Running\nNext check: Daily at 9:00 AM\nAuto-deploy: Enabled ✅\n")
 		})
-		
+
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, `{"status":"healthy","service":"reserve-watch"}`)
 		})
-		
+
 		util.InfoLogger.Printf("Health check server listening on port %s", port)
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			util.ErrorLogger.Printf("Health check server error: %v", err)
