@@ -39,90 +39,14 @@ func (c *WGCClient) FetchCentralBankPurchases() (store.SeriesPoint, error) {
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		// If API fails, use recent known data
-		return c.getMockCBPurchases()
+		return store.SeriesPoint{}, fmt.Errorf("failed to fetch WGC data: %w - API integration not yet implemented", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return c.getMockCBPurchases()
+		return store.SeriesPoint{}, fmt.Errorf("WGC API returned status %d - API integration not yet implemented", resp.StatusCode)
 	}
 
-	// In production, this would parse the WGC data format
-	// For now, return mock data
-	return c.getMockCBPurchases()
-}
-
-// getMockCBPurchases returns recent central bank gold purchase data
-func (c *WGCClient) getMockCBPurchases() (store.SeriesPoint, error) {
-	// Q3 2024: Central banks purchased ~337 tonnes globally
-	// China remains a major buyer
-	now := time.Now()
-	quarter := (int(now.Month())-1)/3 + 1
-	dateStr := fmt.Sprintf("%d-Q%d", now.Year(), quarter)
-
-	return store.SeriesPoint{
-		Date:  dateStr,
-		Value: 337.0, // tonnes
-		Meta: map[string]string{
-			"series_id": "WGC_CB_PURCHASES",
-			"source":    "World_Gold_Council",
-			"unit":      "tonnes",
-			"frequency": "quarterly",
-			"note":      "Global central bank net purchases",
-		},
-	}, nil
-}
-
-// FetchGoldReserveShare fetches gold as % of total reserves
-func (c *WGCClient) FetchGoldReserveShare() (store.SeriesPoint, error) {
-	// Global average: gold comprises ~15% of official reserves
-	// This varies by country (US ~70%, China ~4%, etc.)
-	now := time.Now()
-	dateStr := now.Format("2006-01-02")
-
-	return store.SeriesPoint{
-		Date:  dateStr,
-		Value: 15.3, // percent
-		Meta: map[string]string{
-			"series_id": "WGC_GOLD_RESERVE_SHARE",
-			"source":    "World_Gold_Council",
-			"unit":      "percent_of_reserves",
-			"frequency": "quarterly",
-			"scope":     "global_average",
-		},
-	}, nil
-}
-
-// GetMockWGCData provides recent WGC data for development
-func GetMockWGCData() []store.SeriesPoint {
-	return []store.SeriesPoint{
-		{
-			Date:  "2024-Q3",
-			Value: 337.0,
-			Meta: map[string]string{
-				"series_id": "WGC_CB_PURCHASES",
-				"source":    "World_Gold_Council",
-				"unit":      "tonnes",
-			},
-		},
-		{
-			Date:  "2024-Q2",
-			Value: 290.0,
-			Meta: map[string]string{
-				"series_id": "WGC_CB_PURCHASES",
-				"source":    "World_Gold_Council",
-				"unit":      "tonnes",
-			},
-		},
-		{
-			Date:  "2024-10-27",
-			Value: 15.3,
-			Meta: map[string]string{
-				"series_id": "WGC_GOLD_RESERVE_SHARE",
-				"source":    "World_Gold_Council",
-				"unit":      "percent",
-			},
-		},
-	}
+	// Real WGC API parsing would go here
+	return store.SeriesPoint{}, fmt.Errorf("WGC API parsing not yet implemented - will retry on next fetch")
 }

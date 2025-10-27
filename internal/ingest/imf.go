@@ -49,13 +49,12 @@ func (c *IMFClient) FetchCOFER() (store.SeriesPoint, error) {
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		// If API fails, return mock data as fallback
-		return c.getMockCOFER(), nil
+		return store.SeriesPoint{}, fmt.Errorf("failed to fetch IMF COFER data: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return c.getMockCOFER(), nil
+		return store.SeriesPoint{}, fmt.Errorf("IMF API returned status %d - will retry on next fetch", resp.StatusCode)
 	}
 
 	var imfResp imfResponse
@@ -176,24 +175,4 @@ func (c *IMFClient) FetchAllCOFERCurrencies() ([]store.SeriesPoint, error) {
 	}
 
 	return points, nil
-}
-
-// getMockCOFER returns recent CNY reserve share as fallback
-func (c *IMFClient) getMockCOFER() store.SeriesPoint {
-	now := time.Now()
-	quarter := (int(now.Month())-1)/3 + 1
-	dateStr := fmt.Sprintf("%d-Q%d", now.Year(), quarter)
-
-	return store.SeriesPoint{
-		Date:  dateStr,
-		Value: 2.29, // Q3 2024 actual value
-		Meta: map[string]string{
-			"series_id": "COFER_CNY",
-			"source":    "IMF_fallback",
-			"currency":  "CNY",
-			"unit":      "percent_of_reserves",
-			"frequency": "quarterly",
-			"note":      "API unavailable - using recent known data",
-		},
-	}
 }

@@ -75,14 +75,9 @@ func (c *CIPSClient) FetchCIPSStats() (map[string]float64, error) {
 		stats["annual_trillion_rmb"] = volume
 	}
 
-	// If scraping fails, use recent known data
+	// If scraping fails, return error - NO FAKE DATA
 	if len(stats) == 0 {
-		// 2024 data: 1,500+ participants, ~700B RMB daily avg, ~160T RMB annual
-		stats = map[string]float64{
-			"participants":          1528,
-			"daily_avg_billion_rmb": 697,
-			"annual_trillion_rmb":   160.5,
-		}
+		return nil, fmt.Errorf("failed to parse CIPS statistics from website - scraper may need updating")
 	}
 
 	return stats, nil
@@ -143,41 +138,4 @@ func (c *CIPSClient) GetCIPSSeriesPoints() ([]store.SeriesPoint, error) {
 	}
 
 	return points, nil
-}
-
-// GetMockCIPSData provides recent CIPS network stats for development
-// Source: CIPS official website (184 direct + 1,553 indirect participants)
-func GetMockCIPSData() []store.SeriesPoint {
-	now := time.Now()
-	dateStr := now.Format("2006-01-02")
-
-	return []store.SeriesPoint{
-		{
-			Date:  dateStr,
-			Value: 1737, // 184 direct + 1553 indirect
-			Meta: map[string]string{
-				"series_id": "CIPS_PARTICIPANTS",
-				"source":    "CIPS",
-				"unit":      "count",
-			},
-		},
-		{
-			Date:  dateStr,
-			Value: 697,
-			Meta: map[string]string{
-				"series_id": "CIPS_DAILY_AVG",
-				"source":    "CIPS",
-				"unit":      "billion_rmb",
-			},
-		},
-		{
-			Date:  dateStr,
-			Value: 160.5,
-			Meta: map[string]string{
-				"series_id": "CIPS_ANNUAL_VOLUME",
-				"source":    "CIPS",
-				"unit":      "trillion_rmb",
-			},
-		},
-	}
 }

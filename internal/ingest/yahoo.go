@@ -52,8 +52,7 @@ func (c *YahooFinanceClient) FetchDXY() (store.SeriesPoint, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 429 {
-		// Rate limited - return mock data as fallback
-		return c.getMockDXY(), nil
+		return store.SeriesPoint{}, fmt.Errorf("Yahoo Finance API rate limited (429) - will retry on next fetch")
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -81,17 +80,4 @@ func (c *YahooFinanceClient) FetchDXY() (store.SeriesPoint, error) {
 			"timestamp": timestamp.Format(time.RFC3339),
 		},
 	}, nil
-}
-
-// getMockDXY returns recent DXY value as fallback when API is rate limited
-func (c *YahooFinanceClient) getMockDXY() store.SeriesPoint {
-	return store.SeriesPoint{
-		Date:  time.Now().Format("2006-01-02"),
-		Value: 106.85, // Recent approximate value
-		Meta: map[string]string{
-			"series_id": "DXY",
-			"source":    "yahoo_finance_fallback",
-			"note":      "Rate limited - using fallback data",
-		},
-	}
 }

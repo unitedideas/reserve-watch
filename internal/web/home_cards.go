@@ -82,12 +82,13 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 	now := time.Now().Format("2006-01-02 15:04")
 
 	// 1. Real-time DXY from Yahoo Finance
-	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
-		signal := signals["dtwexbgs"]
+	realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME")
+	signal1 := signals["dtwexbgs"]
+	if realtimeData != nil {
 		cards = append(cards, DataSourceCard{
 			Label:         "🟢 Live Market Price (DXY) - Indicative",
 			Value:         fmt.Sprintf("%.2f", realtimeData.Value),
-			Source:        "Yahoo Finance (Demo)",
+			Source:        "Yahoo Finance",
 			Date:          realtimeData.Date,
 			Link:          "https://finance.yahoo.com/quote/DX-Y.NYB",
 			HasData:       true,
@@ -96,15 +97,28 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			AlertName:     "USD Rally Alert",
 			AlertSignal:   "dxy_change_10d",
 			ChecklistID:   "pricing-hedge-review",
-			Status:        string(signal.Status),
-			StatusBadge:   getStatusBadge(string(signal.Status)),
-			Why:           signal.Why,
-			ActionLabel:   signal.ActionLabel,
-			ActionURL:     analytics.GetActionURL(signal.Action),
+			Status:        string(signal1.Status),
+			StatusBadge:   getStatusBadge(string(signal1.Status)),
+			Why:           signal1.Why,
+			ActionLabel:   signal1.ActionLabel,
+			ActionURL:     analytics.GetActionURL(signal1.Action),
 			SourceUpdated: realtimeData.Date,
 			IngestedAt:    now,
 			Delta:         calculateDelta("DXY_REALTIME"),
 			SparklineData: getSparklineData("DXY_REALTIME"),
+		})
+	} else {
+		// Show "Gathering data..." when API hasn't fetched yet
+		cards = append(cards, DataSourceCard{
+			Label:       "🟢 Live Market Price (DXY) - Indicative",
+			Value:       "⏳ Gathering data...",
+			Source:      "Yahoo Finance",
+			Link:        "https://finance.yahoo.com/quote/DX-Y.NYB",
+			HasData:     false,
+			SoWhat:      "Real-time USD index data will appear here once fetched from Yahoo Finance API.",
+			DoThisNow:   "Data is being collected - check back shortly",
+			Status:      "Gathering",
+			StatusBadge: "neutral",
 		})
 	}
 

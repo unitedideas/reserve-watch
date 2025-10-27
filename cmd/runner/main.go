@@ -43,10 +43,8 @@ func main() {
 
 	util.InfoLogger.Println("Database initialized")
 
-	// Bootstrap with mock data if database is empty
-	if err := bootstrapMockData(db); err != nil {
-		util.ErrorLogger.Printf("Failed to bootstrap mock data: %v", err)
-	}
+	// No mock data - all data will be fetched from real APIs
+	// If APIs fail, tiles will show "Gathering data..." status
 
 	app := &App{
 		cfg:       cfg,
@@ -180,15 +178,9 @@ func (app *App) RunDailyCheck() error {
 		}
 	}
 
-	wgcGoldShare, err := app.wgc.FetchGoldReserveShare()
-	if err != nil {
-		util.ErrorLogger.Printf("WGC gold share fetch failed: %v", err)
-	} else {
-		util.InfoLogger.Printf("WGC Gold Reserve Share: %.1f%%", wgcGoldShare.Value)
-		if err := app.store.SavePoints("WGC_GOLD_RESERVE_SHARE", []store.SeriesPoint{wgcGoldShare}, time.Now()); err != nil {
-			util.ErrorLogger.Printf("Failed to save WGC gold share: %v", err)
-		}
-	}
+	// WGC Gold Reserve Share - API integration not yet implemented
+	// Will show "Gathering data..." on homepage until implemented
+	util.InfoLogger.Println("WGC Gold Reserve Share API not yet implemented")
 
 	// Fetch VIX (Volatility Index) from FRED for Trigger Watch
 	util.InfoLogger.Println("Fetching VIX from FRED...")
@@ -334,103 +326,4 @@ func min(a, b int) int {
 		return a
 	}
 	return b
-}
-
-// bootstrapMockData loads mock data if the database is empty
-func bootstrapMockData(db *store.Store) error {
-	// Check if core data already exists
-	hasData := false
-	if existing, _ := db.GetLatestPoint("SWIFT_RMB"); existing != nil {
-		hasData = true
-		util.InfoLogger.Println("Database already has core data, checking for missing series...")
-	} else {
-		util.InfoLogger.Println("Bootstrapping with mock data...")
-	}
-
-	if !hasData {
-
-		// Load SWIFT RMB mock data
-		swiftData := ingest.GetMockRMBData()
-		for _, point := range swiftData {
-			if err := db.SavePoints("SWIFT_RMB", []store.SeriesPoint{point}, time.Now()); err != nil {
-				return fmt.Errorf("failed to save SWIFT mock data: %w", err)
-			}
-		}
-		util.InfoLogger.Println("✓ Loaded SWIFT RMB mock data")
-
-		// Load CIPS mock data
-		cipsData := ingest.GetMockCIPSData()
-		for _, point := range cipsData {
-			seriesID := point.Meta["series_id"]
-			if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
-				return fmt.Errorf("failed to save CIPS mock data: %w", err)
-			}
-		}
-		util.InfoLogger.Println("✓ Loaded CIPS mock data")
-
-		// Load WGC mock data
-		wgcData := ingest.GetMockWGCData()
-		for _, point := range wgcData {
-			seriesID := point.Meta["series_id"]
-			if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
-				return fmt.Errorf("failed to save WGC mock data: %w", err)
-			}
-		}
-		util.InfoLogger.Println("✓ Loaded WGC mock data")
-
-		// Add IMF COFER mock data (2.3% CNY reserve share - Q3 2024)
-		coferPoint := store.SeriesPoint{
-			Date:  "2024-Q4",
-			Value: 2.18,
-			Meta: map[string]string{
-				"series_id": "COFER_CNY",
-				"source":    "IMF COFER",
-				"unit":      "percent",
-			},
-		}
-		if err := db.SavePoints("COFER_CNY", []store.SeriesPoint{coferPoint}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save COFER mock data: %w", err)
-		}
-		util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
-	}
-
-	// Always add VIX and BBB OAS if missing (for Trigger Watch page)
-	if existing, _ := db.GetLatestPoint("VIXCLS"); existing == nil {
-		util.InfoLogger.Println("Adding VIX mock data...")
-		// Add VIX (Volatility Index) mock data for Trigger Watch
-		vixPoint := store.SeriesPoint{
-			Date:  time.Now().Format("2006-01-02"),
-			Value: 15.2, // Recent typical value (safe range)
-			Meta: map[string]string{
-				"series_id": "VIXCLS",
-				"source":    "FRED",
-				"unit":      "index",
-			},
-		}
-		if err := db.SavePoints("VIXCLS", []store.SeriesPoint{vixPoint}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save VIX mock data: %w", err)
-		}
-		util.InfoLogger.Println("✓ Loaded VIX mock data")
-	}
-
-	if existing, _ := db.GetLatestPoint("BAMLC0A4CBBB"); existing == nil {
-		util.InfoLogger.Println("Adding BBB OAS mock data...")
-		// Add BBB OAS (Credit Spread) mock data for Trigger Watch
-		bbbPoint := store.SeriesPoint{
-			Date:  time.Now().Format("2006-01-02"),
-			Value: 145.0, // Recent typical value (safe range, < 200bps)
-			Meta: map[string]string{
-				"series_id": "BAMLC0A4CBBB",
-				"source":    "FRED",
-				"unit":      "basis_points",
-			},
-		}
-		if err := db.SavePoints("BAMLC0A4CBBB", []store.SeriesPoint{bbbPoint}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save BBB OAS mock data: %w", err)
-		}
-		util.InfoLogger.Println("✓ Loaded BBB OAS mock data")
-	}
-
-	util.InfoLogger.Println("Mock data bootstrap complete!")
-	return nil
 }
