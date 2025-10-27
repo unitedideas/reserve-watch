@@ -667,7 +667,9 @@ const homeTemplate = `<!DOCTYPE html>
                 </div>
                 
                 {{if .SparklineData}}
-                <canvas class="sparkline" data-values="{{.SparklineData}}" width="320" height="40" style="width: 100%; height: 40px; margin: 12px 0;" loading="lazy"></canvas>
+                <div style="height: 40px; margin: 12px 0; position: relative;">
+                    <canvas class="sparkline" data-values="{{.SparklineData}}" width="320" height="40" style="width: 100%; height: 100%;"></canvas>
+                </div>
                 {{end}}
                 
                 {{if .Status}}
@@ -932,7 +934,8 @@ const homeTemplate = `<!DOCTYPE html>
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
+                        aspectRatio: 8,
                         plugins: {
                             legend: { display: false },
                             tooltip: { enabled: false }
@@ -942,7 +945,7 @@ const homeTemplate = `<!DOCTYPE html>
                             y: { display: false }
                         },
                         animation: {
-                            duration: 750 // Smooth animation when entering viewport
+                            duration: 750
                         }
                     }
                 });
