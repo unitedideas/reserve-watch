@@ -1,8 +1,6 @@
 package analytics
 
 import (
-	"time"
-
 	"reserve-watch/internal/store"
 )
 
