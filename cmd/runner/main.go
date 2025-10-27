@@ -380,11 +380,11 @@ func bootstrapMockData(db *store.Store) error {
 
 		// Add IMF COFER mock data (2.3% CNY reserve share - Q3 2024)
 		coferPoint := store.SeriesPoint{
-			Date:  "2024-Q3",
-			Value: 2.29,
+			Date:  "2024-Q4",
+			Value: 2.18,
 			Meta: map[string]string{
 				"series_id": "COFER_CNY",
-				"source":    "IMF",
+				"source":    "IMF COFER",
 				"unit":      "percent",
 			},
 		}

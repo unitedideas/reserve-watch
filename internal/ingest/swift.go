@@ -106,20 +106,21 @@ func (c *SWIFTClient) FetchRMBRank() (int, error) {
 
 // GetMockRMBData provides recent RMB payment share data for development
 // This should be replaced with actual PDF parsing in production
+// Source: SWIFT RMB Tracker August 2025 (July 2025 data)
 func GetMockRMBData() []store.SeriesPoint {
 	return []store.SeriesPoint{
 		{
-			Date:  "2024-10",
-			Value: 4.69,
+			Date:  "2025-07",
+			Value: 2.88,
 			Meta: map[string]string{
 				"series_id": "SWIFT_RMB",
-				"source":    "SWIFT",
-				"rank":      "5",
+				"source":    "SWIFT RMB Tracker",
+				"rank":      "6",
 			},
 		},
 		{
-			Date:  "2024-09",
-			Value: 4.74,
+			Date:  "2025-06",
+			Value: 2.91,
 			Meta: map[string]string{
 				"series_id": "SWIFT_RMB",
 				"source":    "SWIFT",

@@ -7,19 +7,34 @@ import (
 	"reserve-watch/internal/store"
 )
 
-// RMBPenetrationScore calculates the RMB Penetration Score
-// Formula: (SWIFT Payment Share %) × (IMF COFER Reserve Share %) × (CIPS Reach Factor)
-// CIPS Reach Factor = participants / 1000 (normalized)
-// Result is a 0-100 score indicating RMB's global penetration
-func RMBPenetrationScore(swiftShare, coferShare, cipsParticipants float64) float64 {
-	// Normalize CIPS participants (1500+ participants = 1.5 reach factor)
-	cipsReach := cipsParticipants / 1000.0
+// RMBPenetrationScore calculates the RMB Penetration Score (0-100)
+// Methodology: Normalize each component against USD/mature-currency baselines, then equal-weight average
+// - Payments: RMB SWIFT share / USD SWIFT share (~49.1%)
+// - Reserves: RMB COFER share / USD COFER share (~57.7%)  
+// - Network: CIPS participants / SWIFT total participants (~11,000)
+// Result: 0-100 score, where ~8-10 indicates current RMB penetration level
+func RMBPenetrationScore(swiftShareRMB, coferShareRMB, cipsParticipants float64) float64 {
+	// Baselines (as of 2024-2025)
+	const swiftShareUSD = 49.1    // USD payment share in SWIFT
+	const coferShareUSD = 57.7    // USD reserve share in IMF COFER
+	const swiftTotalParticipants = 11000.0  // SWIFT's global member base
 	
-	// Calculate score: payment share × reserve share × reach
-	// Multiply by 10 to get a more readable 0-100 scale
-	score := (swiftShare / 100.0) * (coferShare / 100.0) * cipsReach * 1000.0
+	// Component 1: Payments (0-100 points)
+	// Normalize RMB payment share against USD payment share
+	paymentsComponent := (swiftShareRMB / swiftShareUSD) * 100.0
 	
-	// Cap at 100
+	// Component 2: Reserves (0-100 points)
+	// Normalize RMB reserve share against USD reserve share
+	reservesComponent := (coferShareRMB / coferShareUSD) * 100.0
+	
+	// Component 3: Network (0-100 points)
+	// Normalize CIPS participants against SWIFT total
+	networkComponent := (cipsParticipants / swiftTotalParticipants) * 100.0
+	
+	// Equal-weight average of three components
+	score := (paymentsComponent + reservesComponent + networkComponent) / 3.0
+	
+	// Cap at 100 (shouldn't happen with current data)
 	if score > 100 {
 		score = 100
 	}
@@ -64,13 +79,22 @@ func ReserveDiversificationPressure(goldSharePercent, cbBuyingTonnes float64) fl
 	return math.Round(score*100) / 100 // Round to 2 decimals
 }
 
+// ComponentDetail holds detailed component breakdown
+type ComponentDetail struct {
+	RawValue   float64 `json:"raw_value"`
+	Baseline   float64 `json:"baseline,omitempty"`
+	Normalized float64 `json:"normalized"`
+}
+
 // IndexResult holds calculated index values with metadata
 type IndexResult struct {
-	Name        string
-	Value       float64
-	Description string
-	Components  map[string]float64
-	Timestamp   string
+	Name                string                      `json:"name"`
+	Value               float64                     `json:"value"`
+	Description         string                      `json:"description"`
+	Method              string                      `json:"method"`
+	Components          map[string]float64          `json:"components"`
+	ComponentsDetailed  map[string]ComponentDetail  `json:"components_detailed,omitempty"`
+	Timestamp           string                      `json:"timestamp"`
 }
 
 // CalculateAllIndices computes all proprietary indices from store data
@@ -86,6 +110,16 @@ func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 	
 	// Calculate RMB Penetration Score
 	if swiftPoint != nil && coferPoint != nil && cipsPoint != nil {
+		// Baselines
+		const swiftShareUSD = 49.1
+		const coferShareUSD = 57.7
+		const swiftTotalParticipants = 11000.0
+		
+		// Calculate normalized components
+		paymentsNorm := (swiftPoint.Value / swiftShareUSD) * 100.0
+		reservesNorm := (coferPoint.Value / coferShareUSD) * 100.0
+		networkNorm := (cipsPoint.Value / swiftTotalParticipants) * 100.0
+		
 		score := RMBPenetrationScore(
 			swiftPoint.Value,
 			coferPoint.Value,
@@ -96,10 +130,28 @@ func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 			Name:        "RMB Penetration Score",
 			Value:       score,
 			Description: "Measures RMB's global reach across payments, reserves, and infrastructure",
+			Method:      "Equal-weight average of three normalized components (each 0-100 vs USD baselines)",
 			Components: map[string]float64{
-				"swift_payment_share": swiftPoint.Value,
-				"cofer_reserve_share": coferPoint.Value,
-				"cips_participants":   cipsPoint.Value,
+				"swift_payment_share_rmb": swiftPoint.Value,
+				"cofer_reserve_share_rmb": coferPoint.Value,
+				"cips_participants":       cipsPoint.Value,
+			},
+			ComponentsDetailed: map[string]ComponentDetail{
+				"payments": {
+					RawValue:   swiftPoint.Value,
+					Baseline:   swiftShareUSD,
+					Normalized: math.Round(paymentsNorm*100) / 100,
+				},
+				"reserves": {
+					RawValue:   coferPoint.Value,
+					Baseline:   coferShareUSD,
+					Normalized: math.Round(reservesNorm*100) / 100,
+				},
+				"network": {
+					RawValue:   cipsPoint.Value,
+					Baseline:   swiftTotalParticipants,
+					Normalized: math.Round(networkNorm*100) / 100,
+				},
 			},
 			Timestamp: swiftPoint.Date,
 		})

@@ -146,6 +146,7 @@ func (c *CIPSClient) GetCIPSSeriesPoints() ([]store.SeriesPoint, error) {
 }
 
 // GetMockCIPSData provides recent CIPS network stats for development
+// Source: CIPS official website (184 direct + 1,553 indirect participants)
 func GetMockCIPSData() []store.SeriesPoint {
 	now := time.Now()
 	dateStr := now.Format("2006-01-02")
@@ -153,7 +154,7 @@ func GetMockCIPSData() []store.SeriesPoint {
 	return []store.SeriesPoint{
 		{
 			Date:  dateStr,
-			Value: 1528,
+			Value: 1737, // 184 direct + 1553 indirect
 			Meta: map[string]string{
 				"series_id": "CIPS_PARTICIPANTS",
 				"source":    "CIPS",
