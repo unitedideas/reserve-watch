@@ -631,7 +631,10 @@ const homeTemplate = `<!DOCTYPE html>
         </div>
 
         <!-- Proprietary Indices Section -->
-        <div class="main-content" style="background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); color: white; margin-top: 40px; border: 1px solid rgba(255, 255, 255, 0.2);">
+        <div class="main-content" style="background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); color: white; margin-top: 40px; border: 1px solid rgba(255, 255, 255, 0.2); position: relative;">
+            <div style="background: #FFD700; color: #000; padding: 8px 20px; text-align: center; font-weight: 700; border-radius: 15px 15px 0 0; margin: -20px -20px 20px -20px;">
+                ⭐ PREMIUM FEATURE - Subscribe for live updates & alerts
+            </div>
             <h2 style="text-align: center; margin-bottom: 30px;">🎯 Proprietary De-Dollarization Indices</h2>
             <div class="features">
                 <div class="feature" style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 15px;">
@@ -676,16 +679,18 @@ const homeTemplate = `<!DOCTYPE html>
         {{end}}
 
         <div class="cta-section">
-            <h2>📬 Get Daily Insights</h2>
-            <p style="font-size: 1.2em; margin-bottom: 20px;">
-                Join 1,000+ investors tracking de-dollarization trends
+            <h2>🔓 Unlock Full Access</h2>
+            <p style="font-size: 1.3em; margin-bottom: 10px; font-weight: 600;">
+                Get real-time DXY updates, proprietary indices & instant alerts
             </p>
-            <form class="email-form" action="#" method="post">
-                <input type="email" placeholder="Enter your email" required>
-                <button type="submit">Get Free Updates</button>
-            </form>
-            <p style="color: #666; font-size: 0.9em;">
-                Free daily newsletter • Unsubscribe anytime • No spam
+            <p style="font-size: 1.1em; margin-bottom: 30px; opacity: 0.95;">
+                Join investors monitoring the biggest financial shift since Bretton Woods
+            </p>
+            <a href="/pricing" style="display: inline-block; background: white; color: #5a3a7a; padding: 18px 50px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.2em; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                Start Premium - $74.99/mo →
+            </a>
+            <p style="margin-top: 20px; font-size: 0.95em; opacity: 0.9;">
+                Cancel anytime • Full access to all data & features • Institutional-grade intelligence
             </p>
         </div>
 
