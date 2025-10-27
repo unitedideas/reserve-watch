@@ -44,6 +44,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
 	mux.HandleFunc("/crash-drill/download-pdf", s.handleCrashDrillPDF)
 	mux.HandleFunc("/pricing", s.handlePricing)
+	mux.HandleFunc("/enterprise", s.handleEnterprise)
 	mux.HandleFunc("/success", s.handleSuccess)
 	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
