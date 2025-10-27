@@ -327,6 +327,28 @@ const triggerTemplate = `<!DOCTYPE html>
         </div>
         {{end}}
 
+        <!-- Playbook Actions (Free tier: locked) -->
+        <div style="margin: 40px 0; padding: 40px; background: rgba(255, 255, 255, 0.05); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); position: relative;">
+            <div style="position: absolute; top: 20px; right: 20px; background: #FFD700; color: #000; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9em;">
+                🔒 PRO ONLY
+            </div>
+            <h2 style="color: white; margin-bottom: 20px;">📋 Automated Playbooks</h2>
+            <div style="opacity: 0.6;">
+                <p style="color: #ccc; margin-bottom: 20px;">When thresholds are breached, Pro members receive automated playbooks with specific actions:</p>
+                <ul style="color: #ccc; margin-left: 20px; line-height: 2;">
+                    <li><strong>VIX > 20:</strong> Portfolio hedge review, options strategy activation</li>
+                    <li><strong>VIX > 30:</strong> Emergency rebalancing, cash position increase</li>
+                    <li><strong>BBB OAS > 200bps:</strong> Credit exposure audit, quality upgrade</li>
+                    <li><strong>BBB OAS > 400bps:</strong> Full risk-off protocol, safe haven allocation</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/pricing" style="display: inline-block; padding: 12px 32px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.background='#5568d3'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_unlock_playbooks', {event_category: 'conversion', event_label: 'trigger_watch', value: 74.99});">
+                    Unlock Playbooks - $74.99/mo →
+                </a>
+            </div>
+        </div>
+
         <div class="crash-drill">
             <h2>🚨 Crash-Drill Autopilot</h2>
             <p>When triggers reach critical levels, activate your emergency financial protocol</p>
