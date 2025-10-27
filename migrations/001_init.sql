@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS series_points (
     UNIQUE(series_name, date)
 );
 
-CREATE INDEX idx_series_date ON series_points(series_name, date);
+CREATE INDEX IF NOT EXISTS idx_series_date ON series_points(series_name, date);
 
 -- Published posts tracking
 CREATE TABLE IF NOT EXISTS posts (

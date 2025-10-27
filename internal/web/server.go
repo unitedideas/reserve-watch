@@ -43,12 +43,12 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/trigger-watch", s.handleTriggerWatch)
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
 	mux.HandleFunc("/crash-drill/download-pdf", s.handleCrashDrillPDF)
-    mux.HandleFunc("/pricing", s.handlePricing)
-    mux.HandleFunc("/success", s.handleSuccess)
-    mux.HandleFunc("/api/docs", s.handleAPIDocs)
-    mux.HandleFunc("/api/leads", s.handleLeads)
-    mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
-    mux.HandleFunc("/api/leads", s.handleLeads)
+	mux.HandleFunc("/pricing", s.handlePricing)
+	mux.HandleFunc("/success", s.handleSuccess)
+	mux.HandleFunc("/api/docs", s.handleAPIDocs)
+	mux.HandleFunc("/api/leads", s.handleLeads)
+	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
+	mux.HandleFunc("/api/leads", s.handleLeads)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
@@ -64,38 +64,39 @@ func (s *Server) Start() error {
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
 }
+
 // handleLeads collects user emails for weekly snapshot (simple JSON body {"email":"..."})
 func (s *Server) handleLeads(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodOptions {
-        w.WriteHeader(http.StatusOK)
-        return
-    }
-    if r.Method != http.MethodPost {
-        http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
 
-    type payload struct {
-        Email string `json:"email"`
-    }
-    var p payload
-    if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
-        http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
-        return
-    }
+	type payload struct {
+		Email string `json:"email"`
+	}
+	var p payload
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
+		http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
+		return
+	}
 
-    // For now, just log and acknowledge. Future: persist to DB/leads table.
-    util.InfoLogger.Printf("Lead captured: %s", p.Email)
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	// For now, just log and acknowledge. Future: persist to DB/leads table.
+	util.InfoLogger.Printf("Lead captured: %s", p.Email)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 // CORS middleware to allow API access
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
@@ -133,9 +134,9 @@ type DataSourceCard struct {
 
 // ThreatItem represents a condensed risk callout for the Threat Bar
 type ThreatItem struct {
-    Text   string
-    Status string
-    Link   string
+	Text   string
+	Status string
+	Link   string
 }
 
 // Home page with dashboard
@@ -175,43 +176,43 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		diversificationPressure = "N/A"
 	}
 
-    // Build Threat Bar items from latest signals (watch/crisis only)
-    var threats []ThreatItem
-    if sigs, _ := analytics.GetAllSignals(s.store); len(sigs) > 0 {
-        order := []string{"dtwexbgs", "swift_rmb", "cofer_cny", "vix", "bbb_oas", "cips_participants"}
-        labels := map[string]string{
-            "dtwexbgs":           "USD",
-            "swift_rmb":          "SWIFT RMB",
-            "cofer_cny":          "COFER CNY",
-            "cips_participants":  "CIPS",
-            "wgc_cb_purchases":   "CB Gold",
-            "vix":                 "VIX",
-            "bbb_oas":             "BBB OAS",
-        }
-        for _, key := range order {
-            if sig, ok := sigs[key]; ok {
-                st := string(sig.Status)
-                if st == "watch" || st == "crisis" {
-                    text := labels[key]
-                    if sig.Why != "" {
-                        text = text + ": " + sig.Why
-                    }
-                    threats = append(threats, ThreatItem{
-                        Text:   text,
-                        Status: st,
-                        Link:   analytics.GetActionURL(sig.Action),
-                    })
-                }
-            }
-            if len(threats) >= 3 {
-                break
-            }
-        }
-    }
+	// Build Threat Bar items from latest signals (watch/crisis only)
+	var threats []ThreatItem
+	if sigs, _ := analytics.GetAllSignals(s.store); len(sigs) > 0 {
+		order := []string{"dtwexbgs", "swift_rmb", "cofer_cny", "vix", "bbb_oas", "cips_participants"}
+		labels := map[string]string{
+			"dtwexbgs":          "USD",
+			"swift_rmb":         "SWIFT RMB",
+			"cofer_cny":         "COFER CNY",
+			"cips_participants": "CIPS",
+			"wgc_cb_purchases":  "CB Gold",
+			"vix":               "VIX",
+			"bbb_oas":           "BBB OAS",
+		}
+		for _, key := range order {
+			if sig, ok := sigs[key]; ok {
+				st := string(sig.Status)
+				if st == "watch" || st == "crisis" {
+					text := labels[key]
+					if sig.Why != "" {
+						text = text + ": " + sig.Why
+					}
+					threats = append(threats, ThreatItem{
+						Text:   text,
+						Status: st,
+						Link:   analytics.GetActionURL(sig.Action),
+					})
+				}
+			}
+			if len(threats) >= 3 {
+				break
+			}
+		}
+	}
 
-    tmpl := template.Must(template.New("home").Parse(homeTemplate))
+	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 
-    data := struct {
+	data := struct {
 		Cards                   []DataSourceCard
 		DataPointsJSON          template.JS
 		HasData                 bool
@@ -219,8 +220,8 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		DiversificationPressure string
 		RMBScoreValue           float64
 		DiversificationValue    float64
-        Threats                 []ThreatItem
-    }{
+		Threats                 []ThreatItem
+	}{
 		Cards:                   cards,
 		DataPointsJSON:          dataPointsJSON,
 		HasData:                 len(cards) > 0,
@@ -228,7 +229,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		DiversificationPressure: diversificationPressure,
 		RMBScoreValue:           rmbScoreValue,
 		DiversificationValue:    diversificationValue,
-        Threats:                 threats,
+		Threats:                 threats,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
