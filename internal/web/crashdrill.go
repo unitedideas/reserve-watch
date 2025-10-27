@@ -431,7 +431,7 @@ const crashDrillTemplate = `<!DOCTYPE html>
         <div class="download-section">
             <h2>📥 Download Complete Protocol</h2>
             <p>Get the full PDF checklist with detailed instructions, contact information, and worksheets</p>
-            <a href="#" class="download-btn" onclick="alert('PDF generation coming soon!'); return false;">Download PDF Checklist →</a>
+            <a href="/crash-drill/download-pdf" class="download-btn" target="_blank">Download PDF Checklist →</a>
         </div>
 
         <div class="disclaimer">
@@ -444,6 +444,204 @@ const crashDrillTemplate = `<!DOCTYPE html>
             <a href="/" class="back-link">← Back to Dashboard</a>
             <a href="/trigger-watch" class="back-link">View Trigger Watch</a>
         </div>
+    </div>
+</body>
+</html>`
+
+// handleCrashDrillPDF generates a print-friendly PDF version
+func (s *Server) handleCrashDrillPDF(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Disposition", "inline; filename=crash-drill-checklist.html")
+	
+	tmpl := template.Must(template.New("pdf").Parse(pdfTemplate))
+	tmpl.Execute(w, nil)
+}
+
+const pdfTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crash-Drill Financial Emergency Protocol</title>
+    <style>
+        @media print {
+            body { margin: 0; padding: 20mm; }
+            .no-print { display: none; }
+            .page-break { page-break-after: always; }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 { color: #e74c3c; border-bottom: 3px solid #e74c3c; padding-bottom: 10px; }
+        h2 { color: #3498db; margin-top: 30px; }
+        h3 { color: #2c3e50; margin-top: 20px; }
+        .step { background: #f8f9fa; padding: 15px; margin: 15px 0; border-left: 4px solid #3498db; }
+        .priority-high { border-left-color: #e74c3c; }
+        .priority-medium { border-left-color: #f39c12; }
+        .priority-low { border-left-color: #27ae60; }
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li:before { content: "☐ "; font-size: 1.2em; margin-right: 10px; }
+        .disclaimer { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 20px 0; }
+        .no-print { background: #667eea; color: white; padding: 15px; text-align: center; margin-bottom: 20px; border-radius: 8px; }
+        .no-print button { background: white; color: #667eea; border: none; padding: 10px 20px; font-size: 1em; cursor: pointer; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <h2>📄 Crash-Drill Financial Emergency Protocol</h2>
+        <p>Use your browser's Print function (Ctrl+P / Cmd+P) to save as PDF</p>
+        <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <h1>🚨 Crash-Drill Financial Emergency Protocol</h1>
+    <p><strong>Generated:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Source:</strong> Reserve Watch - De-Dollarization Dashboard</p>
+
+    <h2>📋 Emergency Checklist</h2>
+    
+    <div class="step priority-high">
+        <h3>STEP 1: Treasury Bill Ladder (Critical Priority)</h3>
+        <p><strong>Timeline:</strong> Execute within 24-48 hours</p>
+        <p><strong>Objective:</strong> Lock in risk-free yields before rate cuts erode returns</p>
+        <ul class="checklist">
+            <li>Calculate available liquidity (target: 10-30% of liquid net worth)</li>
+            <li>Open or verify TreasuryDirect.gov account access</li>
+            <li>Structure ladder: 4-week, 8-week, 13-week, 26-week, 52-week T-Bills</li>
+            <li>Execute purchases via TreasuryDirect or brokerage</li>
+            <li>Document maturity schedule and auto-renewal preferences</li>
+        </ul>
+        <p><strong>Rationale:</strong> Capture current elevated short-term rates (4-5% range) before Fed pivot. T-Bills are exempt from state/local taxes and offer perfect liquidity.</p>
+    </div>
+
+    <div class="step priority-high">
+        <h3>STEP 2: RMB Payment Rail Switch (High Priority)</h3>
+        <p><strong>Timeline:</strong> 1-2 weeks</p>
+        <p><strong>Objective:</strong> Establish non-USD payment optionality for international transactions</p>
+        <ul class="checklist">
+            <li>Identify top 5 international vendors/partners who accept RMB</li>
+            <li>Open corporate account with CIPS-connected bank (e.g., ICBC, Bank of China, HSBC Hong Kong)</li>
+            <li>Test small RMB transaction (≤$10K equivalent) to verify rail functionality</li>
+            <li>Document FX conversion costs vs USD SWIFT baseline</li>
+            <li>Negotiate dual-currency invoicing with key suppliers</li>
+        </ul>
+        <p><strong>Rationale:</strong> Diversify payment dependencies. If USD liquidity tightens or sanctions expand, RMB rails via CIPS provide alternative settlement path.</p>
+    </div>
+
+    <div class="step priority-high">
+        <h3>STEP 3: Physical Gold Proof Pack (High Priority)</h3>
+        <p><strong>Timeline:</strong> 1-2 weeks</p>
+        <p><strong>Objective:</strong> Secure portable, jurisdiction-agnostic store of value</p>
+        <ul class="checklist">
+            <li>Purchase 10-20 oz gold coins (American Eagles, Canadian Maples, or Krugerrands)</li>
+            <li>Use reputable dealers: APMEX, JM Bullion, or local coin shops</li>
+            <li>Verify authenticity (weight, dimensions, magnetic test)</li>
+            <li>Secure storage: home safe (fireproof, 1-hour rating minimum) OR bank safety deposit box</li>
+            <li>Photograph serial numbers and store records separately</li>
+            <li>Consider allocated storage at vault provider (e.g., Brink's, Loomis) for larger amounts</li>
+        </ul>
+        <p><strong>Rationale:</strong> Physical gold is outside banking system, non-confiscatable (if properly stored), and universally recognized value. Acts as insurance against currency debasement or capital controls.</p>
+    </div>
+
+    <div class="step priority-medium">
+        <h3>STEP 4: Portfolio Diversification Audit (Medium Priority)</h3>
+        <p><strong>Timeline:</strong> 2-4 weeks</p>
+        <p><strong>Objective:</strong> Reduce single-point-of-failure risk across asset classes, geographies, and currencies</p>
+        <ul class="checklist">
+            <li>Map current portfolio: % in USD cash, US stocks, US bonds, international, alternatives</li>
+            <li>Target allocation: ≤60% US assets, ≥20% international, ≥10% hard assets/alternatives</li>
+            <li>Add non-USD exposure: VXUS (ex-US stocks), BNDX (ex-US bonds), GLD (gold ETF), or foreign currency deposits</li>
+            <li>Verify custodian diversification (no >50% with single brokerage)</li>
+            <li>Document rebalancing triggers (quarterly review minimum)</li>
+        </ul>
+        <p><strong>Rationale:</strong> Concentration risk is the enemy. If US dollar weakens or domestic assets underperform, diversified portfolio provides downside protection.</p>
+    </div>
+
+    <div class="step priority-medium">
+        <h3>STEP 5: Cold Storage Crypto Backup (Medium Priority)</h3>
+        <p><strong>Timeline:</strong> 1-2 weeks</p>
+        <p><strong>Objective:</strong> Establish censorship-resistant digital asset backup outside traditional finance</p>
+        <ul class="checklist">
+            <li>Purchase hardware wallet (Ledger Nano X, Trezor Model T)</li>
+            <li>Allocate 1-5% of net worth to BTC and/or stablecoins (USDC, USDT)</li>
+            <li>Transfer from exchange to cold storage wallet</li>
+            <li>Securely store seed phrase (metal backup, geographically distributed)</li>
+            <li>Test recovery process with small amount</li>
+            <li>Document wallet addresses and recovery instructions for estate plan</li>
+        </ul>
+        <p><strong>Rationale:</strong> Crypto offers bearer-asset portability and 24/7 global liquidity. In capital control scenario, cold storage crypto is inaccessible to third parties.</p>
+    </div>
+
+    <div class="step priority-low">
+        <h3>STEP 6: Legal Structure Documentation (Low Priority / Long-Term)</h3>
+        <p><strong>Timeline:</strong> 1-3 months</p>
+        <p><strong>Objective:</strong> Formalize asset protection and succession planning</p>
+        <ul class="checklist">
+            <li>Consult with asset protection attorney (domestic or international)</li>
+            <li>Establish irrevocable trust, LLC, or offshore structure (if net worth >$1M)</li>
+            <li>Document beneficial ownership and control instructions</li>
+            <li>Update estate documents (will, power of attorney, health care proxy)</li>
+            <li>Review with tax advisor to ensure compliance (FBAR, FATCA, etc.)</li>
+        </ul>
+        <p><strong>Rationale:</strong> Proper legal structures provide asset protection, tax efficiency, and smooth wealth transfer. Essential for high-net-worth individuals.</p>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>📞 Emergency Contact Sheet</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr style="background: #f8f9fa;">
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Service</th>
+            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Contact</th>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">TreasuryDirect</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">www.treasurydirect.gov | (844) 284-2676</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Primary Brokerage</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">[Your broker phone/website]</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Financial Advisor</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">[Your advisor contact]</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Tax Advisor/CPA</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">[Your CPA contact]</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Estate Attorney</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">[Your attorney contact]</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Gold Dealer</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">APMEX.com | JMBullion.com | Local coin shop</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">Crypto Exchange</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">[Your exchange]</td>
+        </tr>
+    </table>
+
+    <div class="disclaimer">
+        <h3>⚠️ CRITICAL DISCLAIMER</h3>
+        <p><strong>This is NOT financial advice.</strong> The Crash-Drill Protocol is an educational framework for discussing financial resilience strategies. Implementation of any strategy requires consultation with qualified professionals:</p>
+        <ul>
+            <li><strong>Financial Advisor:</strong> Verify suitability for your situation</li>
+            <li><strong>Tax Professional:</strong> Understand tax implications (FBAR, FATCA, capital gains, etc.)</li>
+            <li><strong>Attorney:</strong> Ensure legal compliance and proper structuring</li>
+        </ul>
+        <p>All strategies carry risk. Past performance does not guarantee future results. The author and Reserve Watch disclaim all liability for decisions made based on this document.</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #ddd;">
+        <p><strong>Reserve Watch - De-Dollarization Dashboard</strong></p>
+        <p>Track global reserve trends • Proprietary indices • Real-time alerts</p>
+        <p>https://web-production-4c1d00.up.railway.app</p>
     </div>
 </body>
 </html>`
