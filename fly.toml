@@ -1,0 +1,22 @@
+app = "reserve-watch"
+primary_region = "ord"
+
+[build]
+  builder = "paketobuildpacks/builder:base"
+  buildpacks = ["gcr.io/paketo-buildpacks/go"]
+
+[env]
+  APP_ENV = "production"
+  LOG_LEVEL = "info"
+  DRY_RUN = "false"
+  AUTOPUBLISH = "false"
+  DB_DSN = "file:/data/reserve_watch.db?_fk=1"
+
+[mounts]
+  source = "data"
+  destination = "/data"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+

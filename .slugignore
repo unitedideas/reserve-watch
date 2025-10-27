@@ -1,0 +1,16 @@
+# Files to exclude from Heroku slug
+*.md
+.git
+.gitignore
+coverage.out
+bin/
+output/
+*.test
+*_test.go
+internal/*/test.go
+Taskfile.yml
+DEPLOY.md
+DEPLOYMENT_CHECKLIST.md
+MVP_STATUS.md
+README_ORIGINAL.md
+

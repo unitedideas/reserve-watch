@@ -1,0 +1,73 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  build:
+    desc: Build the application
+    cmds:
+      - CGO_ENABLED=1 go build -o bin/reserve-watch cmd/runner/main.go
+    sources:
+      - "**/*.go"
+      - go.mod
+      - go.sum
+    generates:
+      - bin/reserve-watch
+    env:
+      CGO_ENABLED: 1
+
+  build:linux:
+    desc: Build for Linux (from any platform)
+    cmds:
+      - GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -o bin/reserve-watch-linux cmd/runner/main.go
+    env:
+      GOOS: linux
+      GOARCH: amd64
+      CGO_ENABLED: 1
+
+  go:lint:
+    desc: Run Go linters
+    cmds:
+      - go vet ./...
+      - go fmt ./...
+      - go mod tidy
+      - go mod verify
+
+  test:
+    desc: Run all tests
+    cmds:
+      - go test -v -race -coverprofile=coverage.out ./...
+
+  test:coverage:
+    desc: Run tests and show coverage
+    cmds:
+      - go test -v -race -coverprofile=coverage.out ./...
+      - go tool cover -func=coverage.out
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf bin/
+      - rm -rf output/
+      - rm -f coverage.out
+      - rm -f reserve_watch.db
+
+  deps:
+    desc: Download and tidy dependencies
+    cmds:
+      - go mod download
+      - go mod tidy
+
+  run:
+    desc: Run the application
+    deps: [build]
+    cmds:
+      - ./bin/reserve-watch
+
+  run:dev:
+    desc: Run the application directly
+    cmds:
+      - go run cmd/runner/main.go
+

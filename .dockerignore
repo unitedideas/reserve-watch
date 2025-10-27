@@ -1,0 +1,13 @@
+.git
+.gitignore
+*.md
+!README.md
+bin/
+output/
+coverage.out
+*.test
+*_test.go
+.env
+.env.local
+Taskfile.yml
+

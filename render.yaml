@@ -1,0 +1,22 @@
+services:
+  - type: worker
+    name: reserve-watch
+    env: go
+    region: oregon
+    plan: free
+    buildCommand: go build -o reserve-watch cmd/runner/main.go
+    startCommand: ./reserve-watch
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: DRY_RUN
+        value: false
+      - key: AUTOPUBLISH
+        value: false
+      - key: FRED_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: DB_DSN
+        value: file:./data/reserve_watch.db?_fk=1
+
