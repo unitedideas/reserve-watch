@@ -41,7 +41,7 @@ func main() {
 	}
 
 	util.InfoLogger.Println("Database initialized")
-	
+
 	// Bootstrap with mock data if database is empty
 	if err := bootstrapMockData(db); err != nil {
 		util.ErrorLogger.Printf("Failed to bootstrap mock data: %v", err)
@@ -337,91 +337,91 @@ func bootstrapMockData(db *store.Store) error {
 	} else {
 		util.InfoLogger.Println("Bootstrapping with mock data...")
 	}
-	
+
 	if !hasData {
-	
-	// Load SWIFT RMB mock data
-	swiftData := ingest.GetMockRMBData()
-	for _, point := range swiftData {
-		if err := db.SavePoints("SWIFT_RMB", []store.SeriesPoint{point}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save SWIFT mock data: %w", err)
+
+		// Load SWIFT RMB mock data
+		swiftData := ingest.GetMockRMBData()
+		for _, point := range swiftData {
+			if err := db.SavePoints("SWIFT_RMB", []store.SeriesPoint{point}, time.Now()); err != nil {
+				return fmt.Errorf("failed to save SWIFT mock data: %w", err)
+			}
 		}
-	}
-	util.InfoLogger.Println("✓ Loaded SWIFT RMB mock data")
-	
-	// Load CIPS mock data
-	cipsData := ingest.GetMockCIPSData()
-	for _, point := range cipsData {
-		seriesID := point.Meta["series_id"]
-		if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save CIPS mock data: %w", err)
+		util.InfoLogger.Println("✓ Loaded SWIFT RMB mock data")
+
+		// Load CIPS mock data
+		cipsData := ingest.GetMockCIPSData()
+		for _, point := range cipsData {
+			seriesID := point.Meta["series_id"]
+			if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
+				return fmt.Errorf("failed to save CIPS mock data: %w", err)
+			}
 		}
-	}
-	util.InfoLogger.Println("✓ Loaded CIPS mock data")
-	
-	// Load WGC mock data
-	wgcData := ingest.GetMockWGCData()
-	for _, point := range wgcData {
-		seriesID := point.Meta["series_id"]
-		if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
-			return fmt.Errorf("failed to save WGC mock data: %w", err)
+		util.InfoLogger.Println("✓ Loaded CIPS mock data")
+
+		// Load WGC mock data
+		wgcData := ingest.GetMockWGCData()
+		for _, point := range wgcData {
+			seriesID := point.Meta["series_id"]
+			if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
+				return fmt.Errorf("failed to save WGC mock data: %w", err)
+			}
 		}
+		util.InfoLogger.Println("✓ Loaded WGC mock data")
+
+		// Add IMF COFER mock data (2.3% CNY reserve share - Q3 2024)
+		coferPoint := store.SeriesPoint{
+			Date:  "2024-Q3",
+			Value: 2.29,
+			Meta: map[string]string{
+				"series_id": "COFER_CNY",
+				"source":    "IMF",
+				"unit":      "percent",
+			},
+		}
+		if err := db.SavePoints("COFER_CNY", []store.SeriesPoint{coferPoint}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save COFER mock data: %w", err)
+		}
+		util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
 	}
-	util.InfoLogger.Println("✓ Loaded WGC mock data")
-	
-	// Add IMF COFER mock data (2.3% CNY reserve share - Q3 2024)
-	coferPoint := store.SeriesPoint{
-		Date:  "2024-Q3",
-		Value: 2.29,
-		Meta: map[string]string{
-			"series_id": "COFER_CNY",
-			"source":    "IMF",
-			"unit":      "percent",
-		},
-	}
-	if err := db.SavePoints("COFER_CNY", []store.SeriesPoint{coferPoint}, time.Now()); err != nil {
-		return fmt.Errorf("failed to save COFER mock data: %w", err)
-	}
-	util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
-	}
-	
+
 	// Always add VIX and BBB OAS if missing (for Trigger Watch page)
 	if existing, _ := db.GetLatestPoint("VIXCLS"); existing == nil {
 		util.InfoLogger.Println("Adding VIX mock data...")
-	// Add VIX (Volatility Index) mock data for Trigger Watch
-	vixPoint := store.SeriesPoint{
-		Date:  time.Now().Format("2006-01-02"),
-		Value: 15.2, // Recent typical value (safe range)
-		Meta: map[string]string{
-			"series_id": "VIXCLS",
-			"source":    "FRED",
-			"unit":      "index",
-		},
+		// Add VIX (Volatility Index) mock data for Trigger Watch
+		vixPoint := store.SeriesPoint{
+			Date:  time.Now().Format("2006-01-02"),
+			Value: 15.2, // Recent typical value (safe range)
+			Meta: map[string]string{
+				"series_id": "VIXCLS",
+				"source":    "FRED",
+				"unit":      "index",
+			},
+		}
+		if err := db.SavePoints("VIXCLS", []store.SeriesPoint{vixPoint}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save VIX mock data: %w", err)
+		}
+		util.InfoLogger.Println("✓ Loaded VIX mock data")
 	}
-	if err := db.SavePoints("VIXCLS", []store.SeriesPoint{vixPoint}, time.Now()); err != nil {
-		return fmt.Errorf("failed to save VIX mock data: %w", err)
-	}
-	util.InfoLogger.Println("✓ Loaded VIX mock data")
-	}
-	
+
 	if existing, _ := db.GetLatestPoint("BAMLC0A4CBBB"); existing == nil {
 		util.InfoLogger.Println("Adding BBB OAS mock data...")
-	// Add BBB OAS (Credit Spread) mock data for Trigger Watch
-	bbbPoint := store.SeriesPoint{
-		Date:  time.Now().Format("2006-01-02"),
-		Value: 145.0, // Recent typical value (safe range, < 200bps)
-		Meta: map[string]string{
-			"series_id": "BAMLC0A4CBBB",
-			"source":    "FRED",
-			"unit":      "basis_points",
-		},
+		// Add BBB OAS (Credit Spread) mock data for Trigger Watch
+		bbbPoint := store.SeriesPoint{
+			Date:  time.Now().Format("2006-01-02"),
+			Value: 145.0, // Recent typical value (safe range, < 200bps)
+			Meta: map[string]string{
+				"series_id": "BAMLC0A4CBBB",
+				"source":    "FRED",
+				"unit":      "basis_points",
+			},
+		}
+		if err := db.SavePoints("BAMLC0A4CBBB", []store.SeriesPoint{bbbPoint}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save BBB OAS mock data: %w", err)
+		}
+		util.InfoLogger.Println("✓ Loaded BBB OAS mock data")
 	}
-	if err := db.SavePoints("BAMLC0A4CBBB", []store.SeriesPoint{bbbPoint}, time.Now()); err != nil {
-		return fmt.Errorf("failed to save BBB OAS mock data: %w", err)
-	}
-	util.InfoLogger.Println("✓ Loaded BBB OAS mock data")
-	}
-	
+
 	util.InfoLogger.Println("Mock data bootstrap complete!")
 	return nil
 }
