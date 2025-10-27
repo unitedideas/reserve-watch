@@ -321,7 +321,12 @@ const pricingTemplate = `<!DOCTYPE html>
 
     <script>
         async function checkout(priceId, plan) {
-            const btn = document.getElementById('premium-btn');
+            const btn = document.getElementById('pro-btn');
+            if (!btn) {
+                console.error('Button not found');
+                return;
+            }
+            
             const originalText = btn.textContent;
             btn.textContent = 'Loading...';
             btn.disabled = true;
@@ -334,14 +339,20 @@ const pricingTemplate = `<!DOCTYPE html>
                 });
 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Checkout response:', errorText);
                     throw new Error('Checkout failed');
                 }
 
                 const data = await response.json();
-                window.location.href = data.url;
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error('No checkout URL returned');
+                }
             } catch (error) {
                 console.error('Checkout error:', error);
-                alert('Failed to start checkout. Please try again or contact support.');
+                alert('Failed to start checkout. Please try again or contact support at contact@reserve.watch');
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
