@@ -69,22 +69,28 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		dataPoints, _ = s.store.GetRecentPoints("DTWEXBGS", 30)
 	}
 
+	// Convert data points to JSON for JavaScript
+	dataPointsJSON, _ := json.Marshal(dataPoints)
+	
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 	
 	data := struct {
-		LatestValue float64
-		LatestDate  string
-		HasData     bool
-		DataPoints  []store.SeriesPoint
+		LatestValue    float64
+		LatestDate     string
+		HasData        bool
+		DataPointsJSON template.JS
 	}{
-		LatestValue: latestValue,
-		LatestDate:  latestDate,
-		HasData:     latest != nil,
-		DataPoints:  dataPoints,
+		LatestValue:    latestValue,
+		LatestDate:     latestDate,
+		HasData:        latest != nil,
+		DataPointsJSON: template.JS(dataPointsJSON),
 	}
 	
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	tmpl.Execute(w, data)
+	if err := tmpl.Execute(w, data); err != nil {
+		util.ErrorLogger.Printf("Template execution error: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
 }
 
 // Health check endpoint
@@ -453,7 +459,7 @@ const homeTemplate = `<!DOCTYPE html>
     {{if .HasData}}
     <script>
         // Prepare chart data
-        const chartData = {{.DataPoints}};
+        const chartData = {{.DataPointsJSON}};
         const labels = chartData.map(d => d.date).reverse();
         const values = chartData.map(d => d.value).reverse();
 
