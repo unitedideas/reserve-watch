@@ -14,6 +14,57 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 	// Fetch signal analysis for all indicators
 	signals, _ := analytics.GetAllSignals(s.store)
 	
+	// Helper function to calculate delta % vs 10 days ago
+	calculateDelta := func(seriesID string) string {
+		recent, err := s.store.GetRecentPoints(seriesID, 15) // Get more to ensure we have 10 days
+		if err != nil || len(recent) < 2 {
+			return ""
+		}
+		
+		latest := recent[0].Value
+		var tenDaysAgo float64
+		if len(recent) >= 10 {
+			tenDaysAgo = recent[9].Value
+		} else {
+			tenDaysAgo = recent[len(recent)-1].Value
+		}
+		
+		if tenDaysAgo == 0 {
+			return ""
+		}
+		
+		delta := ((latest - tenDaysAgo) / tenDaysAgo) * 100
+		if delta > 0 {
+			return fmt.Sprintf("+%.2f%%", delta)
+		}
+		return fmt.Sprintf("%.2f%%", delta)
+	}
+	
+	// Helper function to get sparkline data (last 30 values)
+	getSparklineData := func(seriesID string) string {
+		recent, err := s.store.GetRecentPoints(seriesID, 30)
+		if err != nil || len(recent) == 0 {
+			return "[]"
+		}
+		
+		// Reverse to get chronological order
+		values := make([]float64, len(recent))
+		for i := 0; i < len(recent); i++ {
+			values[len(recent)-1-i] = recent[i].Value
+		}
+		
+		// Convert to JSON string
+		result := "["
+		for i, v := range values {
+			if i > 0 {
+				result += ","
+			}
+			result += fmt.Sprintf("%.2f", v)
+		}
+		result += "]"
+		return result
+	}
+	
 	// Helper function to get status badge CSS class
 	getStatusBadge := func(status string) string {
 		switch status {
@@ -52,6 +103,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: realtimeData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("DXY_REALTIME"),
+			SparklineData: getSparklineData("DXY_REALTIME"),
 		})
 	}
 
@@ -77,6 +130,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: fredData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("DTWEXBGS"),
+			SparklineData: getSparklineData("DTWEXBGS"),
 		})
 	}
 
@@ -102,6 +157,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: coferData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("COFER_CNY"),
+			SparklineData: getSparklineData("COFER_CNY"),
 		})
 	}
 
@@ -127,6 +184,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: swiftData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("SWIFT_RMB"),
+			SparklineData: getSparklineData("SWIFT_RMB"),
 		})
 	}
 
@@ -152,6 +211,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: cipsData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("CIPS_PARTICIPANTS"),
+			SparklineData: getSparklineData("CIPS_PARTICIPANTS"),
 		})
 	}
 
@@ -177,6 +238,8 @@ func (s *Server) buildDataSourceCards() []DataSourceCard {
 			ActionURL:     analytics.GetActionURL(signal.Action),
 			SourceUpdated: wgcData.Date,
 			IngestedAt:    now,
+			Delta:         calculateDelta("WGC_CB_PURCHASES"),
+			SparklineData: getSparklineData("WGC_CB_PURCHASES"),
 		})
 	}
 

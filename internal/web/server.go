@@ -99,6 +99,8 @@ type DataSourceCard struct {
 	ActionURL     string // Link to action
 	SourceUpdated string // When source last updated
 	IngestedAt    string // When we fetched it
+	Delta         string // Change vs 10 days ago (e.g., "+2.5%")
+	SparklineData string // JSON array of last 30 days for mini chart
 }
 
 // Home page with dashboard
@@ -647,7 +649,16 @@ const homeTemplate = `<!DOCTYPE html>
             {{range .Cards}}
             <div class="stat-card">
                 <div class="stat-label">{{.Label}}</div>
-                <div class="stat-value">{{.Value}}</div>
+                <div class="stat-value">
+                    {{.Value}}
+                    {{if .Delta}}
+                    <span style="font-size: 0.5em; margin-left: 8px; color: {{if eq (slice .Delta 0 1) "+"}}#10b981{{else}}#ef4444{{end}};">{{.Delta}}</span>
+                    {{end}}
+                </div>
+                
+                {{if .SparklineData}}
+                <canvas class="sparkline" data-values="{{.SparklineData}}" style="width: 100%; height: 40px; margin: 12px 0;"></canvas>
+                {{end}}
                 
                 {{if .Status}}
                 <div class="status-badge {{.StatusBadge}}" role="status" aria-live="polite">
@@ -867,5 +878,44 @@ const homeTemplate = `<!DOCTYPE html>
         }
     </script>
     {{end}}
+    
+    <script>
+        // Render sparklines for each card
+        document.addEventListener('DOMContentLoaded', function() {
+            const sparklines = document.querySelectorAll('.sparkline');
+            sparklines.forEach(canvas => {
+                const values = JSON.parse(canvas.dataset.values || '[]');
+                if (values.length === 0) return;
+                
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: values.map((_, i) => i),
+                        datasets: [{
+                            data: values,
+                            borderColor: '#667eea',
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>`
