@@ -6,10 +6,10 @@ import (
 )
 
 type TriggerMetric struct {
-	Name      string
-	Value     string
-	Threshold string
-	Status    string // "safe", "warning", "critical"
+	Name        string
+	Value       string
+	Threshold   string
+	Status      string // "safe", "warning", "critical"
 	StatusColor string
 	Description string
 }
@@ -17,18 +17,18 @@ type TriggerMetric struct {
 func (s *Server) handleTriggerWatch(w http.ResponseWriter, r *http.Request) {
 	// Get VIX from FRED
 	vixData, _ := s.store.GetLatestPoint("VIXCLS")
-	
-	// Get BBB OAS from FRED  
+
+	// Get BBB OAS from FRED
 	bbbData, _ := s.store.GetLatestPoint("BAMLC0A4CBBB")
-	
+
 	var triggers []TriggerMetric
-	
+
 	// VIX Trigger
 	if vixData != nil {
 		status := "safe"
 		statusColor := "#4CAF50"
 		threshold := "< 20"
-		
+
 		if vixData.Value > 30 {
 			status = "critical"
 			statusColor = "#f44336"
@@ -38,7 +38,7 @@ func (s *Server) handleTriggerWatch(w http.ResponseWriter, r *http.Request) {
 			statusColor = "#ff9800"
 			threshold = "> 20 (WARNING)"
 		}
-		
+
 		triggers = append(triggers, TriggerMetric{
 			Name:        "VIX (Volatility Index)",
 			Value:       formatFloat(vixData.Value, 2),
@@ -48,13 +48,13 @@ func (s *Server) handleTriggerWatch(w http.ResponseWriter, r *http.Request) {
 			Description: "Market fear gauge. >20 = elevated vol, >30 = panic",
 		})
 	}
-	
+
 	// BBB OAS Trigger
 	if bbbData != nil {
 		status := "safe"
 		statusColor := "#4CAF50"
 		threshold := "< 200bps"
-		
+
 		if bbbData.Value > 400 {
 			status = "critical"
 			statusColor = "#f44336"
@@ -64,7 +64,7 @@ func (s *Server) handleTriggerWatch(w http.ResponseWriter, r *http.Request) {
 			statusColor = "#ff9800"
 			threshold = "> 200bps (WARNING)"
 		}
-		
+
 		triggers = append(triggers, TriggerMetric{
 			Name:        "BBB OAS (Credit Spread)",
 			Value:       formatFloat(bbbData.Value, 0) + "bps",
@@ -302,4 +302,5 @@ const triggerTemplate = `<!DOCTYPE html>
     </div>
 </body>
 </html>`
+
 

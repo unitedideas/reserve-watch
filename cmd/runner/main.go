@@ -41,6 +41,11 @@ func main() {
 	}
 
 	util.InfoLogger.Println("Database initialized")
+	
+	// Bootstrap with mock data if database is empty
+	if err := bootstrapMockData(db); err != nil {
+		util.ErrorLogger.Printf("Failed to bootstrap mock data: %v", err)
+	}
 
 	app := &App{
 		cfg:       cfg,
@@ -320,4 +325,62 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// bootstrapMockData loads mock data if the database is empty
+func bootstrapMockData(db *store.Store) error {
+	// Check if data already exists
+	if existing, _ := db.GetLatestPoint("SWIFT_RMB"); existing != nil {
+		util.InfoLogger.Println("Database already has data, skipping bootstrap")
+		return nil
+	}
+	
+	util.InfoLogger.Println("Bootstrapping with mock data...")
+	
+	// Load SWIFT RMB mock data
+	swiftData := ingest.GetMockRMBData()
+	for _, point := range swiftData {
+		if err := db.SavePoints("SWIFT_RMB", []store.SeriesPoint{point}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save SWIFT mock data: %w", err)
+		}
+	}
+	util.InfoLogger.Println("✓ Loaded SWIFT RMB mock data")
+	
+	// Load CIPS mock data
+	cipsData := ingest.GetMockCIPSData()
+	for _, point := range cipsData {
+		seriesID := point.Meta["series_id"]
+		if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save CIPS mock data: %w", err)
+		}
+	}
+	util.InfoLogger.Println("✓ Loaded CIPS mock data")
+	
+	// Load WGC mock data
+	wgcData := ingest.GetMockWGCData()
+	for _, point := range wgcData {
+		seriesID := point.Meta["series_id"]
+		if err := db.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
+			return fmt.Errorf("failed to save WGC mock data: %w", err)
+		}
+	}
+	util.InfoLogger.Println("✓ Loaded WGC mock data")
+	
+	// Add IMF COFER mock data (2.3% CNY reserve share - Q3 2024)
+	coferPoint := store.SeriesPoint{
+		Date:  "2024-Q3",
+		Value: 2.29,
+		Meta: map[string]string{
+			"series_id": "COFER_CNY",
+			"source":    "IMF",
+			"unit":      "percent",
+		},
+	}
+	if err := db.SavePoints("COFER_CNY", []store.SeriesPoint{coferPoint}, time.Now()); err != nil {
+		return fmt.Errorf("failed to save COFER mock data: %w", err)
+	}
+	util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
+	
+	util.InfoLogger.Println("Mock data bootstrap complete!")
+	return nil
 }

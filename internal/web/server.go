@@ -31,6 +31,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/methodology", s.handleMethodology)
 	mux.HandleFunc("/trigger-watch", s.handleTriggerWatch)
+	mux.HandleFunc("/api/refresh", s.handleAPIRefresh)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
@@ -57,18 +58,18 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 
 // DataSourceCard represents a data source card on the dashboard
 type DataSourceCard struct {
-	Label  string
-	Value  string
-	Source string
-	Date   string
-	Link   string
+	Label   string
+	Value   string
+	Source  string
+	Date    string
+	Link    string
 	HasData bool
 }
 
 // Home page with dashboard
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	var cards []DataSourceCard
-	
+
 	// 1. Real-time DXY from Yahoo Finance
 	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
 		cards = append(cards, DataSourceCard{
@@ -80,7 +81,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			HasData: true,
 		})
 	}
-	
+
 	// 2. Official FRED USD Index
 	if fredData, _ := s.store.GetLatestPoint("DTWEXBGS"); fredData != nil {
 		cards = append(cards, DataSourceCard{
@@ -92,7 +93,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			HasData: true,
 		})
 	}
-	
+
 	// 3. IMF COFER CNY Reserve Share
 	if coferData, _ := s.store.GetLatestPoint("COFER_CNY"); coferData != nil {
 		cards = append(cards, DataSourceCard{
@@ -104,7 +105,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			HasData: true,
 		})
 	}
-	
+
 	// 4. SWIFT RMB Payment Share
 	if swiftData, _ := s.store.GetLatestPoint("SWIFT_RMB"); swiftData != nil {
 		cards = append(cards, DataSourceCard{
@@ -116,7 +117,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			HasData: true,
 		})
 	}
-	
+
 	// 5. CIPS Participants
 	if cipsData, _ := s.store.GetLatestPoint("CIPS_PARTICIPANTS"); cipsData != nil {
 		cards = append(cards, DataSourceCard{
@@ -128,7 +129,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			HasData: true,
 		})
 	}
-	
+
 	// 6. World Gold Council CB Purchases
 	if wgcData, _ := s.store.GetLatestPoint("WGC_CB_PURCHASES"); wgcData != nil {
 		cards = append(cards, DataSourceCard{
@@ -149,7 +150,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
-	
+
 	data := struct {
 		Cards          []DataSourceCard
 		DataPointsJSON template.JS
@@ -189,7 +190,7 @@ func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"No data available"}`, http.StatusNotFound)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"series":    "DTWEXBGS",
@@ -207,7 +208,7 @@ func (s *Server) handleAPIRealtimeLatest(w http.ResponseWriter, r *http.Request)
 		http.Error(w, `{"error":"No real-time data available yet","message":"Check will run at next scheduled time (9 AM daily) or refresh in a few minutes"}`, http.StatusNotFound)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"series":    "DXY_REALTIME",
