@@ -165,3 +165,4 @@ func (p *MailchimpPublisher) setContent(campaignID, content string) error {
 
 	return nil
 }
+

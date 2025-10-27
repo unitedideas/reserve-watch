@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
-	"time"
 
 	"reserve-watch/internal/compose"
 	"reserve-watch/internal/config"
@@ -15,6 +13,7 @@ import (
 	"reserve-watch/internal/publish"
 	"reserve-watch/internal/store"
 	"reserve-watch/internal/util"
+	"reserve-watch/internal/web"
 
 	"github.com/robfig/cron/v3"
 )
@@ -68,27 +67,16 @@ func main() {
 	c.Start()
 	util.InfoLogger.Println("Cron scheduler started. Press Ctrl+C to exit.")
 
-	// Start health check server for Railway
+	// Start web dashboard server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
+	webServer := web.NewServer(db, port)
 	go func() {
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "✅ Reserve Watch is running!\n\nStatus: Active\nScheduler: Running\nNext check: Daily at 9:00 AM\nAuto-deploy: Enabled ✅\n")
-		})
-
-		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/json")
-			fmt.Fprintf(w, `{"status":"healthy","service":"reserve-watch","version":"1.0.0","timestamp":"%s"}`, time.Now().Format(time.RFC3339))
-		})
-
-		util.InfoLogger.Printf("Health check server listening on port %s", port)
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			util.ErrorLogger.Printf("Health check server error: %v", err)
+		if err := webServer.Start(); err != nil {
+			util.ErrorLogger.Printf("Web server error: %v", err)
 		}
 	}()
 

@@ -165,3 +165,4 @@ func TestSavePost(t *testing.T) {
 		t.Error("Expected post ID to be set after save")
 	}
 }
+

@@ -5,3 +5,4 @@ build:
     CGO_ENABLED: "1"
 run:
   web: ./reserve-watch
+

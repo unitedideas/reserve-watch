@@ -79,3 +79,4 @@ func TestGetEnvBool(t *testing.T) {
 		t.Error("Expected default value true for missing env var")
 	}
 }
+

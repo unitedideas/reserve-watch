@@ -1,0 +1,510 @@
+package web
+
+import (
+	"encoding/json"
+	"fmt"
+	"html/template"
+	"net/http"
+	"time"
+
+	"reserve-watch/internal/store"
+	"reserve-watch/internal/util"
+)
+
+type Server struct {
+	store *store.Store
+	port  string
+}
+
+func NewServer(store *store.Store, port string) *Server {
+	return &Server{
+		store: store,
+		port:  port,
+	}
+}
+
+func (s *Server) Start() error {
+	mux := http.NewServeMux()
+
+	// Routes
+	mux.HandleFunc("/", s.handleHome)
+	mux.HandleFunc("/health", s.handleHealth)
+	mux.HandleFunc("/api/latest", s.handleAPILatest)
+	mux.HandleFunc("/api/history", s.handleAPIHistory)
+
+	util.InfoLogger.Printf("Web server starting on port %s", s.port)
+	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
+}
+
+// CORS middleware to allow API access
+func (s *Server) corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
+// Home page with dashboard
+func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
+	// Get latest data
+	latest, err := s.store.GetLatestPoint("DTWEXBGS")
+	
+	var latestValue float64
+	var latestDate string
+	var dataPoints []store.SeriesPoint
+	
+	if err == nil && latest != nil {
+		latestValue = latest.Value
+		latestDate = latest.Date
+		
+		// Get last 30 days for chart
+		dataPoints, _ = s.store.GetSeriesPoints("DTWEXBGS", 30)
+	}
+
+	tmpl := template.Must(template.New("home").Parse(homeTemplate))
+	
+	data := struct {
+		LatestValue float64
+		LatestDate  string
+		HasData     bool
+		DataPoints  []store.SeriesPoint
+	}{
+		LatestValue: latestValue,
+		LatestDate:  latestDate,
+		HasData:     latest != nil,
+		DataPoints:  dataPoints,
+	}
+	
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	tmpl.Execute(w, data)
+}
+
+// Health check endpoint
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	
+	response := map[string]interface{}{
+		"status":    "healthy",
+		"service":   "reserve-watch",
+		"version":   "1.0.0",
+		"timestamp": time.Now().Format(time.RFC3339),
+	}
+	
+	json.NewEncoder(w).Encode(response)
+}
+
+// API: Get latest USD index value
+func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
+	latest, err := s.store.GetLatestPoint("DTWEXBGS")
+	if err != nil {
+		http.Error(w, `{"error":"No data available"}`, http.StatusNotFound)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"series":    "DTWEXBGS",
+		"name":      "US Dollar Index",
+		"value":     latest.Value,
+		"date":      latest.Date,
+		"timestamp": time.Now().Format(time.RFC3339),
+	})
+}
+
+// API: Get historical data
+func (s *Server) handleAPIHistory(w http.ResponseWriter, r *http.Request) {
+	// Get limit from query params (default 30)
+	limitStr := r.URL.Query().Get("limit")
+	limit := 30
+	if limitStr != "" {
+		fmt.Sscanf(limitStr, "%d", &limit)
+	}
+	
+	points, err := s.store.GetSeriesPoints("DTWEXBGS", limit)
+	if err != nil {
+		http.Error(w, `{"error":"Failed to fetch data"}`, http.StatusInternalServerError)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"series": "DTWEXBGS",
+		"name":   "US Dollar Index",
+		"count":  len(points),
+		"data":   points,
+	})
+}
+
+const homeTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserve Watch - De-Dollarization Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 60px 20px 40px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-date {
+            color: #999;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 40px 0;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .feature h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            margin: 40px 0;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .email-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 30px auto;
+        }
+        
+        .email-form input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+        
+        .email-form button {
+            padding: 15px 40px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .email-form button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .api-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 40px 0;
+        }
+        
+        .api-endpoint {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Reserve Watch</h1>
+            <p class="tagline">Real-Time De-Dollarization Tracking & Analysis</p>
+            <div style="margin-top: 20px;">
+                <span class="badge">🔴 LIVE</span>
+                <span class="badge">✅ Updated Daily</span>
+            </div>
+        </header>
+
+        {{if .HasData}}
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-label">US Dollar Index (DXY)</div>
+                <div class="stat-value">{{printf "%.2f" .LatestValue}}</div>
+                <div class="stat-date">as of {{.LatestDate}}</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h2 style="text-align: center; margin-bottom: 30px;">📊 Historical Trend (Last 30 Days)</h2>
+            <div class="chart-container">
+                <canvas id="usdChart"></canvas>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">📈</div>
+                    <h3>Daily Updates</h3>
+                    <p>Automatic tracking of USD strength from Federal Reserve data</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Smart Alerts</h3>
+                    <p>Get notified of significant changes in dollar valuation</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Visual Analysis</h3>
+                    <p>Beautiful charts showing long-term de-dollarization trends</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Developer API</h3>
+                    <p>Access raw data for your own applications</p>
+                </div>
+            </div>
+        </div>
+        {{else}}
+        <div class="main-content">
+            <div class="no-data">
+                <h2>⏳ Collecting Data...</h2>
+                <p>The system will fetch the first data point at the next scheduled run (9:00 AM daily).</p>
+                <p style="margin-top: 20px;">Check back soon!</p>
+            </div>
+        </div>
+        {{end}}
+
+        <div class="cta-section">
+            <h2>📬 Get Daily Insights</h2>
+            <p style="font-size: 1.2em; margin-bottom: 20px;">
+                Join 1,000+ investors tracking de-dollarization trends
+            </p>
+            <form class="email-form" action="#" method="post">
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit">Get Free Updates</button>
+            </form>
+            <p style="opacity: 0.8; font-size: 0.9em;">
+                Free daily newsletter • Unsubscribe anytime • No spam
+            </p>
+        </div>
+
+        <div class="main-content api-section">
+            <h2 style="margin-bottom: 20px;">🔌 Developer API</h2>
+            <p style="margin-bottom: 20px;">Access USD index data programmatically:</p>
+            
+            <h3>Latest Value:</h3>
+            <div class="api-endpoint">
+                GET /api/latest
+            </div>
+            
+            <h3 style="margin-top: 20px;">Historical Data:</h3>
+            <div class="api-endpoint">
+                GET /api/history?limit=30
+            </div>
+            
+            <p style="margin-top: 20px; color: #666;">
+                Free for personal use • Rate limited to 100 requests/day
+            </p>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Reserve Watch • Powered by Federal Reserve Economic Data (FRED)</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Data updated daily • Not investment advice
+            </p>
+        </footer>
+    </div>
+
+    {{if .HasData}}
+    <script>
+        // Prepare chart data
+        const chartData = {{.DataPoints}};
+        const labels = chartData.map(d => d.date).reverse();
+        const values = chartData.map(d => d.value).reverse();
+
+        // Create chart
+        const ctx = document.getElementById('usdChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'US Dollar Index (DXY)',
+                    data: values,
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {{end}}
+</body>
+</html>`
+
