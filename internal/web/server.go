@@ -30,6 +30,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/", s.handleHome)
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
+	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
@@ -135,11 +136,30 @@ func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"No data available"}`, http.StatusNotFound)
 		return
 	}
-
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"series":    "DTWEXBGS",
 		"name":      "US Dollar Index",
+		"value":     latest.Value,
+		"date":      latest.Date,
+		"timestamp": time.Now().Format(time.RFC3339),
+	})
+}
+
+// API: Get real-time DXY value from Yahoo Finance
+func (s *Server) handleAPIRealtimeLatest(w http.ResponseWriter, r *http.Request) {
+	latest, err := s.store.GetLatestPoint("DXY_REALTIME")
+	if err != nil || latest == nil {
+		http.Error(w, `{"error":"No real-time data available yet","message":"Check will run at next scheduled time (9 AM daily) or refresh in a few minutes"}`, http.StatusNotFound)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"series":    "DXY_REALTIME",
+		"name":      "US Dollar Index (Real-Time)",
+		"source":    "Yahoo Finance",
 		"value":     latest.Value,
 		"date":      latest.Date,
 		"timestamp": time.Now().Format(time.RFC3339),
