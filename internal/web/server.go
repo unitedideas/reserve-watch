@@ -66,7 +66,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		latestDate = latest.Date
 		
 		// Get last 30 days for chart
-		dataPoints, _ = s.store.GetSeriesPoints("DTWEXBGS", 30)
+		dataPoints, _ = s.store.GetRecentPoints("DTWEXBGS", 30)
 	}
 
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
@@ -129,7 +129,7 @@ func (s *Server) handleAPIHistory(w http.ResponseWriter, r *http.Request) {
 		fmt.Sscanf(limitStr, "%d", &limit)
 	}
 	
-	points, err := s.store.GetSeriesPoints("DTWEXBGS", limit)
+	points, err := s.store.GetRecentPoints("DTWEXBGS", limit)
 	if err != nil {
 		http.Error(w, `{"error":"Failed to fetch data"}`, http.StatusInternalServerError)
 		return
