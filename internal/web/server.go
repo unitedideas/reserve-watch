@@ -644,7 +644,7 @@ const homeTemplate = `<!DOCTYPE html>
                 <span class="badge">✅ Updated Daily</span>
             </div>
             <div style="margin-top: 30px;">
-                <a href="/pricing" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 1.2em; font-weight: 700; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
+                <a href="/pricing" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 1.2em; font-weight: 700; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_hero_cta', {event_category: 'conversion', event_label: 'hero', value: 74.99});">
                     🚀 Start Pro - Unlock Full Access
                 </a>
                 <div style="margin-top: 12px; font-size: 0.9em; opacity: 0.8;">
@@ -721,7 +721,7 @@ const homeTemplate = `<!DOCTYPE html>
                 <div style="margin-top: var(--space-3); padding: var(--space-2); background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(90, 58, 122, 0.1) 100%); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: var(--radius-sm);">
                     <div style="font-size: 0.85em; font-weight: 600; color: #667eea; margin-bottom: 6px;">🔒 Unlock Full Access</div>
                     <div style="font-size: 0.8em; color: #555; margin-bottom: 8px;">Get exact values, full charts, alerts, and playbooks</div>
-                    <a href="/pricing" style="display: inline-block; padding: 6px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; font-size: 0.8em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                    <a href="/pricing" style="display: inline-block; padding: 6px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; font-size: 0.8em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_unlock_tile', {event_category: 'conversion', event_label: '{{.Label}}', value: 74.99});">
                         Start Pro - $74.99/mo →
                     </a>
                 </div>

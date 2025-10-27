@@ -259,7 +259,7 @@ const pricingTemplate = `<!DOCTYPE html>
                     <li>🔌 <strong>API access</strong> (1,000 req/day)</li>
                     <li>📞 Priority email support</li>
                 </ul>
-                <button onclick="checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="pro-btn">Start Pro - $74.99/mo</button>
+                <button onclick="if(typeof gtag !== 'undefined') gtag('event', 'start_checkout', {event_category: 'conversion', event_label: 'Pro', value: 74.99}); checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="pro-btn">Start Pro - $74.99/mo</button>
                 <p style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">Cancel anytime. 14-day money-back guarantee.</p>
             </div>
 

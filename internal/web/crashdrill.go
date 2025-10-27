@@ -463,18 +463,26 @@ const crashDrillTemplate = `<!DOCTYPE html>
                 </div>
             </div>
             
-            <ul class="steps-list">
-                {{range .Steps}}
-                <li>{{.}}</li>
-                {{end}}
-            </ul>
+            <!-- Free Tier: Hide steps, show upsell -->
+            <div style="margin-top: 20px; padding: 30px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(90, 58, 122, 0.1) 100%); border: 2px solid rgba(102, 126, 234, 0.3); border-radius: 12px; text-align: center;">
+                <div style="font-size: 1.2em; font-weight: 700; color: #667eea; margin-bottom: 12px;">🔒 Detailed Steps Locked</div>
+                <p style="color: #555; margin-bottom: 20px;">Upgrade to Pro to access the full step-by-step checklist with detailed instructions, timelines, and contact information.</p>
+                <a href="/pricing" style="display: inline-block; padding: 12px 32px; background: #667eea; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.background='#5568d3'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'">
+                    Unlock Pro - $74.99/mo →
+                </a>
+            </div>
         </div>
         {{end}}
 
-        <div class="download-section">
+        <div class="download-section" style="opacity: 0.6; position: relative;">
+            <div style="position: absolute; top: 20px; right: 20px; background: #FFD700; color: #000; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9em;">
+                🔒 PRO ONLY
+            </div>
             <h2>📥 Download Complete Protocol</h2>
             <p>Get the full PDF checklist with detailed instructions, contact information, and worksheets</p>
-            <a href="/crash-drill/download-pdf" class="download-btn" target="_blank">Download PDF Checklist →</a>
+            <a href="/pricing" class="download-btn" style="background: #999; cursor: not-allowed;">
+                PDF Download (Pro Feature) →
+            </a>
         </div>
 
         <div class="disclaimer">
