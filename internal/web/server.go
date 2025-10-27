@@ -44,7 +44,6 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
 	mux.HandleFunc("/crash-drill/download-pdf", s.handleCrashDrillPDF)
 	mux.HandleFunc("/pricing", s.handlePricing)
-	mux.HandleFunc("/enterprise", s.handleEnterprise)
 	mux.HandleFunc("/success", s.handleSuccess)
 	mux.HandleFunc("/api/docs", s.handleAPIDocs)
 	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
@@ -831,7 +830,6 @@ const homeTemplate = `<!DOCTYPE html>
                         <h3 style="color: white; font-size: 1em; margin-bottom: var(--space-2);">Plans</h3>
                         <ul style="list-style: none; padding: 0; margin: 0;">
                             <li style="margin-bottom: var(--space-1);"><a href="/pricing" style="color: rgba(255,255,255,0.7); text-decoration: none;">Pricing</a></li>
-                            <li style="margin-bottom: var(--space-1);"><a href="/enterprise" style="color: rgba(255,255,255,0.7); text-decoration: none;">Enterprise</a></li>
                         </ul>
                     </div>
                     <div>

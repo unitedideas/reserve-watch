@@ -78,19 +78,12 @@ const pricingTemplate = `<!DOCTYPE html>
             border-color: rgba(255, 255, 255, 0.2);
         }
         .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
+            display: flex;
+            justify-content: center;
             margin-bottom: 40px;
-            max-width: 900px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-        }
-        
-        @media (max-width: 768px) {
-            .pricing-grid {
-                grid-template-columns: 1fr;
-            }
         }
         .pricing-card {
             background: rgba(255, 255, 255, 0.05);
@@ -205,8 +198,8 @@ const pricingTemplate = `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1>💰 Unlock Full Access</h1>
-        <p class="subtitle">Get real-time de-dollarization intelligence that institutional investors pay thousands for</p>
+        <h1>💰 Subscribe to Reserve Watch Pro</h1>
+        <p class="subtitle">Real-time de-dollarization intelligence for serious investors</p>
 
         <nav class="main-nav">
             <a href="/" class="nav-link">Dashboard</a>
@@ -220,10 +213,9 @@ const pricingTemplate = `<!DOCTYPE html>
         <div class="pricing-grid">
             <!-- Pro Tier -->
             <div class="pricing-card featured">
-                <div class="featured-badge">INDIVIDUAL</div>
                 <div class="tier-name">Pro</div>
                 <div class="tier-price">$74.99<span class="period">/month</span></div>
-                <p class="tier-description">Professional intelligence for serious investors</p>
+                <p class="tier-description">Everything you need to monitor de-dollarization trends</p>
                 <ul class="features-list">
                     <li>📊 <strong>Exact metric values</strong> (USD, COFER, SWIFT, CIPS, WGC)</li>
                     <li>📈 <strong>Full historical charts</strong> (5+ years)</li>
@@ -239,27 +231,6 @@ const pricingTemplate = `<!DOCTYPE html>
                 </ul>
                 <button onclick="if(typeof gtag !== 'undefined') gtag('event', 'start_checkout', {event_category: 'conversion', event_label: 'Pro', value: 74.99}); checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="premium-btn">Start Pro - $74.99/mo</button>
                 <p style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">Cancel anytime. 14-day money-back guarantee.</p>
-            </div>
-
-            <!-- Team Tier -->
-            <div class="pricing-card">
-                <div class="featured-badge" style="background: #10b981;">TEAMS</div>
-                <div class="tier-name">Team</div>
-                <div class="tier-price">$199<span class="period">/month</span></div>
-                <p class="tier-description">For teams and organizations</p>
-                <ul class="features-list">
-                    <li>✅ <strong>All Pro features</strong></li>
-                    <li>👥 <strong>5 user seats</strong> (add more at $30/user)</li>
-                    <li>🔔 <strong>Shared alerts</strong> (team notifications)</li>
-                    <li>📊 <strong>Slack/webhook integrations</strong></li>
-                    <li>📝 <strong>Audit trail</strong> (who triggered what)</li>
-                    <li>🔌 <strong>10x API limits</strong> (10,000 req/day)</li>
-                    <li>📞 <strong>Priority support</strong> (24hr SLA)</li>
-                    <li>🔐 <strong>SSO ready</strong> (coming Q2 2025)</li>
-                    <li>📋 <strong>Custom playbooks</strong></li>
-                    <li>💼 <strong>Invoice billing</strong></li>
-                </ul>
-                <a href="/enterprise" class="cta-button secondary">Contact Sales →</a>
             </div>
         </div>
 
