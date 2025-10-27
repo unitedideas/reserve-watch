@@ -410,7 +410,7 @@ const homeTemplate = `<!DOCTYPE html>
         }
         
         .stat-date {
-            color: #999;
+            color: #666;
             font-size: 0.85em;
             margin-top: var(--space-1);
         }
@@ -438,7 +438,7 @@ const homeTemplate = `<!DOCTYPE html>
         }
         
         .status-watch {
-            background: #f59e0b;
+            background: #d97706;
             color: white;
         }
         
