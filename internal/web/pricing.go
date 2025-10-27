@@ -237,7 +237,7 @@ const pricingTemplate = `<!DOCTYPE html>
                     <li>📊 <strong>Status analysis</strong> (Good/Watch/Crisis + why)</li>
                     <li>📞 <strong>Priority email support</strong></li>
                 </ul>
-                <button onclick="if(typeof gtag !== 'undefined') gtag('event', 'start_checkout', {event_category: 'conversion', event_label: 'Pro', value: 74.99}); checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="pro-btn">Start Pro - $74.99/mo</button>
+                <button onclick="if(typeof gtag !== 'undefined') gtag('event', 'start_checkout', {event_category: 'conversion', event_label: 'Pro', value: 74.99}); checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="premium-btn">Start Pro - $74.99/mo</button>
                 <p style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">Cancel anytime. 14-day money-back guarantee.</p>
             </div>
 
@@ -321,12 +321,7 @@ const pricingTemplate = `<!DOCTYPE html>
 
     <script>
         async function checkout(priceId, plan) {
-            const btn = document.getElementById('pro-btn');
-            if (!btn) {
-                console.error('Button not found');
-                return;
-            }
-            
+            const btn = document.getElementById('premium-btn');
             const originalText = btn.textContent;
             btn.textContent = 'Loading...';
             btn.disabled = true;
@@ -339,20 +334,14 @@ const pricingTemplate = `<!DOCTYPE html>
                 });
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Checkout response:', errorText);
                     throw new Error('Checkout failed');
                 }
 
                 const data = await response.json();
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    throw new Error('No checkout URL returned');
-                }
+                window.location.href = data.url;
             } catch (error) {
                 console.error('Checkout error:', error);
-                alert('Failed to start checkout. Please try again or contact support at contact@reserve.watch');
+                alert('Failed to start checkout. Please try again or contact support.');
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
