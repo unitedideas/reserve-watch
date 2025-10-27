@@ -182,7 +182,27 @@ func (app *App) RunDailyCheck() error {
 		}
 	}
 
-	// Fetch official data from FRED
+	// Fetch VIX (Volatility Index) from FRED for Trigger Watch
+	util.InfoLogger.Println("Fetching VIX from FRED...")
+	vixResult := app.fred.FetchSeries("VIXCLS")
+	if vixResult.Err == nil && len(vixResult.Points) > 0 {
+		util.InfoLogger.Printf("VIX: %.2f", vixResult.Points[0].Value)
+		if err := app.store.SavePoints("VIXCLS", vixResult.Points, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save VIX: %v", err)
+		}
+	}
+
+	// Fetch BBB OAS (Credit Spread) from FRED for Trigger Watch
+	util.InfoLogger.Println("Fetching BBB OAS from FRED...")
+	bbbResult := app.fred.FetchSeries("BAMLC0A4CBBB")
+	if bbbResult.Err == nil && len(bbbResult.Points) > 0 {
+		util.InfoLogger.Printf("BBB OAS: %.0f bps", bbbResult.Points[0].Value)
+		if err := app.store.SavePoints("BAMLC0A4CBBB", bbbResult.Points, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save BBB OAS: %v", err)
+		}
+	}
+
+	// Fetch official USD Index data from FRED
 	seriesID := "DTWEXBGS"
 	util.InfoLogger.Printf("Fetching FRED series: %s", seriesID)
 	result := app.fred.FetchSeries(seriesID)
