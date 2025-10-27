@@ -116,48 +116,68 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// 3. IMF COFER CNY Reserve Share
 	if coferData, _ := s.store.GetLatestPoint("COFER_CNY"); coferData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "💰 CNY Global Reserve Share",
-			Value:   fmt.Sprintf("%.2f%%", coferData.Value),
-			Source:  "IMF COFER",
-			Date:    coferData.Date,
-			Link:    "https://data.imf.org/?sk=E6A5F467-C14B-4AA8-9F6D-5A09EC4E62A4",
-			HasData: true,
+			Label:       "💰 CNY Global Reserve Share",
+			Value:       fmt.Sprintf("%.2f%%", coferData.Value),
+			Source:      "IMF COFER",
+			Date:        coferData.Date,
+			Link:        "https://data.imf.org/?sk=E6A5F467-C14B-4AA8-9F6D-5A09EC4E62A4",
+			HasData:     true,
+			SoWhat:      "Central-bank reserve shares show long-run currency preference. USD share ~57-58% recently; CNY near ~2%. Slow-moving but signals structural shifts.",
+			DoThisNow:   "Set alert: USD share −1pp over 2 quarters → Generate Cash Diversification Memo template (board-ready) for treasury review.",
+			AlertName:   "Reserve Shift Alert",
+			AlertSignal: "cofer_usd_decline",
+			ChecklistID: "cash-diversification-memo",
 		})
 	}
 
 	// 4. SWIFT RMB Payment Share
 	if swiftData, _ := s.store.GetLatestPoint("SWIFT_RMB"); swiftData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "💳 RMB Global Payment Share",
-			Value:   fmt.Sprintf("%.2f%%", swiftData.Value),
-			Source:  "SWIFT RMB Tracker",
-			Date:    swiftData.Date,
-			Link:    "https://www.swift.com/swift-resource/248201/download",
-			HasData: true,
+			Label:       "💳 RMB Global Payment Share",
+			Value:       fmt.Sprintf("%.2f%%", swiftData.Value),
+			Source:      "SWIFT RMB Tracker",
+			Date:        swiftData.Date,
+			Link:        "https://www.swift.com/swift-resource/248201/download",
+			HasData:     true,
+			SoWhat:      "RMB's global payment share is small but rising; watch pace, not level. Recent prints around low single digits, rank ~#6. Upticks foreshadow RMB settlement asks.",
+			DoThisNow:   "Set alert: RMB share > 3.0% → Run RMB Settlement Readiness (open bank accounts, update ERP currency config, negotiate vendor RMB terms).",
+			AlertName:   "RMB Payment Growth",
+			AlertSignal: "swift_rmb_threshold",
+			ChecklistID: "rmb-settlement-readiness",
 		})
 	}
 
 	// 5. CIPS Participants
 	if cipsData, _ := s.store.GetLatestPoint("CIPS_PARTICIPANTS"); cipsData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🌐 CIPS Network Participants",
-			Value:   fmt.Sprintf("%.0f", cipsData.Value),
-			Source:  "CIPS",
-			Date:    cipsData.Date,
-			Link:    "https://www.cips.com.cn/en/index/index.html",
-			HasData: true,
+			Label:       "🌐 CIPS Network Participants",
+			Value:       fmt.Sprintf("%.0f", cipsData.Value),
+			Source:      "CIPS",
+			Date:        cipsData.Date,
+			Link:        "https://www.cips.com.cn/en/index/index.html",
+			HasData:     true,
+			SoWhat:      "More CIPS participants/throughput = easier RMB settlement with China-linked counterparties. 2024 annual volume ~¥175T; participants >1,700.",
+			DoThisNow:   "Set alert: CIPS daily avg +15% MoM → Run Bank Enablement & Counterparty Checks (verify KYC, cut-off times, fee schedules).",
+			AlertName:   "CIPS Growth Alert",
+			AlertSignal: "cips_volume_surge",
+			ChecklistID: "bank-enablement-checks",
 		})
 	}
 
 	// 6. World Gold Council CB Purchases
 	if wgcData, _ := s.store.GetLatestPoint("WGC_CB_PURCHASES"); wgcData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🥇 Central Bank Gold Purchases (QTD)",
-			Value:   fmt.Sprintf("%.0f tonnes", wgcData.Value),
-			Source:  "World Gold Council",
-			Date:    wgcData.Date,
-			Link:    "https://www.gold.org/goldhub/research/gold-demand-trends",
-			HasData: true,
+			Label:       "🥇 Central Bank Gold Purchases (QTD)",
+			Value:       fmt.Sprintf("%.0f tonnes", wgcData.Value),
+			Source:      "World Gold Council",
+			Date:        wgcData.Date,
+			Link:        "https://www.gold.org/goldhub/research/gold-demand-trends",
+			HasData:     true,
+			SoWhat:      "Central banks have been buying >1,000t/yr (record trend), signaling structural diversification into gold away from fiat currencies.",
+			DoThisNow:   "Set alert: CB purchases > 100t this month → Generate Gold Proof-of-Holdings PDF (vault statements, custodians, tokenized-gold reconciliation if any).",
+			AlertName:   "Gold Buying Surge",
+			AlertSignal: "wgc_cb_purchases_spike",
+			ChecklistID: "gold-proof-holdings",
 		})
 	}
 
