@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"reserve-watch/internal/analytics"
 	"reserve-watch/internal/store"
 	"reserve-watch/internal/util"
 )
@@ -35,6 +36,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
+	mux.HandleFunc("/api/indices", s.handleAPIIndices)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
@@ -149,16 +151,49 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		dataPointsJSON = template.JS(pointsBytes)
 	}
 
+	// Calculate proprietary indices with error handling
+	var rmbScore, diversificationPressure string
+	rmbScoreValue, diversificationValue := 0.0, 0.0
+	
+	indices, err := analytics.CalculateAllIndices(s.store)
+	if err == nil && len(indices) > 0 {
+		for _, idx := range indices {
+			if idx.Name == "RMB Penetration Score" {
+				rmbScore = fmt.Sprintf("%.1f", idx.Value)
+				rmbScoreValue = idx.Value
+			} else if idx.Name == "Reserve Diversification Pressure" {
+				diversificationPressure = fmt.Sprintf("%.1f", idx.Value)
+				diversificationValue = idx.Value
+			}
+		}
+	}
+	
+	// Default to "N/A" if calculation fails
+	if rmbScore == "" {
+		rmbScore = "N/A"
+	}
+	if diversificationPressure == "" {
+		diversificationPressure = "N/A"
+	}
+
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 
 	data := struct {
-		Cards          []DataSourceCard
-		DataPointsJSON template.JS
-		HasData        bool
+		Cards                   []DataSourceCard
+		DataPointsJSON          template.JS
+		HasData                 bool
+		RMBScore                string
+		DiversificationPressure string
+		RMBScoreValue           float64
+		DiversificationValue    float64
 	}{
-		Cards:          cards,
-		DataPointsJSON: dataPointsJSON,
-		HasData:        len(cards) > 0,
+		Cards:                   cards,
+		DataPointsJSON:          dataPointsJSON,
+		HasData:                 len(cards) > 0,
+		RMBScore:                rmbScore,
+		DiversificationPressure: diversificationPressure,
+		RMBScoreValue:           rmbScoreValue,
+		DiversificationValue:    diversificationValue,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -241,6 +276,22 @@ func (s *Server) handleAPIHistory(w http.ResponseWriter, r *http.Request) {
 		"name":   "US Dollar Index",
 		"count":  len(points),
 		"data":   points,
+	})
+}
+
+// API: Get proprietary indices
+func (s *Server) handleAPIIndices(w http.ResponseWriter, r *http.Request) {
+	indices, err := analytics.CalculateAllIndices(s.store)
+	if err != nil {
+		http.Error(w, `{"error":"Insufficient data to calculate indices"}`, http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"indices":   indices,
+		"count":     len(indices),
+		"timestamp": time.Now().Format(time.RFC3339),
 	})
 }
 
@@ -483,14 +534,20 @@ const homeTemplate = `<!DOCTYPE html>
                 <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
                     <div class="feature-icon">🌍</div>
                     <h3>RMB Penetration Score</h3>
-                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">Coming Soon</p>
+                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">{{.RMBScore}}</p>
                     <p style="opacity: 0.9;">Combines SWIFT payment share × COFER reserves × CIPS reach</p>
+                    {{if gt .RMBScoreValue 0.0}}
+                    <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.7;">Score: 0-100 scale • Higher = greater RMB penetration</p>
+                    {{end}}
                 </div>
                 <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
                     <div class="feature-icon">⚠️</div>
                     <h3>Reserve Diversification Pressure</h3>
-                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">Coming Soon</p>
+                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">{{.DiversificationPressure}}</p>
                     <p style="opacity: 0.9;">Measures gold reserve trends + central bank buying</p>
+                    {{if gt .DiversificationValue 0.0}}
+                    <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.7;">Pressure: 0-100 scale • Higher = more pressure to diversify from USD</p>
+                    {{end}}
                 </div>
             </div>
             <p style="text-align: center; margin-top: 30px; opacity: 0.8; font-size: 0.9em;">
