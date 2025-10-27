@@ -76,9 +76,9 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// 1. Real-time DXY from Yahoo Finance
 	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🔴 Live Market Price (DXY)",
+			Label:   "🔴 Live Market Price (DXY) - Indicative",
 			Value:   fmt.Sprintf("%.2f", realtimeData.Value),
-			Source:  "Yahoo Finance",
+			Source:  "Yahoo Finance (Demo)",
 			Date:    realtimeData.Date,
 			Link:    "https://finance.yahoo.com/quote/DX-Y.NYB",
 			HasData: true,
@@ -136,7 +136,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// 6. World Gold Council CB Purchases
 	if wgcData, _ := s.store.GetLatestPoint("WGC_CB_PURCHASES"); wgcData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🥇 Central Bank Gold Purchases",
+			Label:   "🥇 Central Bank Gold Purchases (QTD)",
 			Value:   fmt.Sprintf("%.0f tonnes", wgcData.Value),
 			Source:  "World Gold Council",
 			Date:    wgcData.Date,
@@ -155,7 +155,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// Calculate proprietary indices with error handling
 	var rmbScore, diversificationPressure string
 	rmbScoreValue, diversificationValue := 0.0, 0.0
-	
+
 	indices, err := analytics.CalculateAllIndices(s.store)
 	if err == nil && len(indices) > 0 {
 		for _, idx := range indices {
@@ -168,7 +168,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Default to "N/A" if calculation fails
 	if rmbScore == "" {
 		rmbScore = "N/A"
@@ -229,11 +229,12 @@ func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"series":    "DTWEXBGS",
-		"name":      "US Dollar Index",
-		"value":     latest.Value,
-		"date":      latest.Date,
-		"timestamp": time.Now().Format(time.RFC3339),
+		"symbol":            "DTWEXBGS",
+		"name":              "US Dollar Index",
+		"value":             latest.Value,
+		"asOf":              latest.Date,
+		"source_updated_at": latest.Date,
+		"ingested_at":       time.Now().Format(time.RFC3339),
 	})
 }
 
@@ -241,18 +242,20 @@ func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAPIRealtimeLatest(w http.ResponseWriter, r *http.Request) {
 	latest, err := s.store.GetLatestPoint("DXY_REALTIME")
 	if err != nil || latest == nil {
-		http.Error(w, `{"error":"No real-time data available yet","message":"Check will run at next scheduled time (9 AM daily) or refresh in a few minutes"}`, http.StatusNotFound)
+		http.Error(w, `{"error":"No real-time data available yet","message":"Check will run at next scheduled time (6 AM EST daily)"}`, http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"series":    "DXY_REALTIME",
-		"name":      "US Dollar Index (Real-Time)",
-		"source":    "Yahoo Finance",
-		"value":     latest.Value,
-		"date":      latest.Date,
-		"timestamp": time.Now().Format(time.RFC3339),
+		"symbol":            "DXY_REALTIME",
+		"name":              "US Dollar Index (Real-Time)",
+		"source":            "Yahoo Finance",
+		"value":             latest.Value,
+		"asOf":              latest.Date,
+		"source_updated_at": latest.Date,
+		"ingested_at":       time.Now().Format(time.RFC3339),
+		"disclaimer":        "Indicative/demo data - Yahoo Finance/ICE DXY. Not for redistribution.",
 	})
 }
 
@@ -267,16 +270,23 @@ func (s *Server) handleAPIHistory(w http.ResponseWriter, r *http.Request) {
 
 	points, err := s.store.GetRecentPoints("DTWEXBGS", limit)
 	if err != nil {
-		http.Error(w, `{"error":"Failed to fetch data"}`, http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error":   "Failed to fetch data",
+			"details": err.Error(),
+		})
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"series": "DTWEXBGS",
-		"name":   "US Dollar Index",
-		"count":  len(points),
-		"data":   points,
+		"symbol":            "DTWEXBGS",
+		"name":              "US Dollar Index",
+		"count":             len(points),
+		"data":              points,
+		"source_updated_at": time.Now().Format(time.RFC3339),
+		"ingested_at":       time.Now().Format(time.RFC3339),
 	})
 }
 
