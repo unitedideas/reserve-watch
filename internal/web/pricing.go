@@ -79,15 +79,15 @@ const pricingTemplate = `<!DOCTYPE html>
         }
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 30px;
             margin-bottom: 40px;
-            max-width: 1200px;
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
         }
         
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
             .pricing-grid {
                 grid-template-columns: 1fr;
             }
@@ -218,46 +218,24 @@ const pricingTemplate = `<!DOCTYPE html>
         </nav>
 
         <div class="pricing-grid">
-            <!-- Free Tier -->
-            <div class="pricing-card">
-                <div class="tier-name">Free</div>
-                <div class="tier-price">$0<span class="period">/month</span></div>
-                <p class="tier-description">Get started with de-dollarization monitoring</p>
-                <ul class="features-list">
-                    <li>✅ Status badges (Good/Watch/Crisis)</li>
-                    <li>✅ "Why this matters" explanations</li>
-                    <li>✅ Last updated timestamps</li>
-                    <li>✅ Blurred 30-day sparklines (preview)</li>
-                    <li>✅ Trigger Watch status (no playbooks)</li>
-                    <li>✅ Crash-Drill titles (no content)</li>
-                    <li>✅ Weekly email snapshot</li>
-                    <li>❌ Exact metric values</li>
-                    <li>❌ Full historical charts</li>
-                    <li>❌ Alerts & webhooks</li>
-                    <li>❌ CSV/JSON exports</li>
-                    <li>❌ API access</li>
-                </ul>
-                <a href="/" class="cta-button secondary">Start Free →</a>
-            </div>
-
             <!-- Pro Tier -->
             <div class="pricing-card featured">
-                <div class="featured-badge">MOST POPULAR</div>
+                <div class="featured-badge">INDIVIDUAL</div>
                 <div class="tier-name">Pro</div>
                 <div class="tier-price">$74.99<span class="period">/month</span></div>
                 <p class="tier-description">Professional intelligence for serious investors</p>
                 <ul class="features-list">
-                    <li>✅ Everything in Free, plus:</li>
                     <li>📊 <strong>Exact metric values</strong> (USD, COFER, SWIFT, CIPS, WGC)</li>
                     <li>📈 <strong>Full historical charts</strong> (5+ years)</li>
                     <li>🎯 <strong>Proprietary indices</strong> (RMB Score, Diversification Pressure)</li>
-                    <li>🔴 <strong>Real-time DXY</strong> (every 15 min)</li>
+                    <li>🔴 <strong>Real-time DXY</strong> (every 15 min during market hours)</li>
                     <li>🔔 <strong>Custom alerts</strong> (email/webhook)</li>
                     <li>📥 <strong>CSV/JSON exports</strong> (all data)</li>
-                    <li>📋 <strong>Full Crash-Drill</strong> (content + PDF)</li>
-                    <li>🚨 <strong>Trigger Watch playbooks</strong></li>
+                    <li>📋 <strong>Full Crash-Drill</strong> (content + PDF checklist)</li>
+                    <li>🚨 <strong>Trigger Watch playbooks</strong> (VIX & BBB OAS)</li>
                     <li>🔌 <strong>API access</strong> (1,000 req/day)</li>
-                    <li>📞 Priority email support</li>
+                    <li>📊 <strong>Status analysis</strong> (Good/Watch/Crisis + why)</li>
+                    <li>📞 <strong>Priority email support</strong></li>
                 </ul>
                 <button onclick="if(typeof gtag !== 'undefined') gtag('event', 'start_checkout', {event_category: 'conversion', event_label: 'Pro', value: 74.99}); checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Pro')" class="cta-button" id="pro-btn">Start Pro - $74.99/mo</button>
                 <p style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">Cancel anytime. 14-day money-back guarantee.</p>
@@ -265,20 +243,21 @@ const pricingTemplate = `<!DOCTYPE html>
 
             <!-- Team Tier -->
             <div class="pricing-card">
+                <div class="featured-badge" style="background: #10b981;">TEAMS</div>
                 <div class="tier-name">Team</div>
                 <div class="tier-price">$199<span class="period">/month</span></div>
                 <p class="tier-description">For teams and organizations</p>
                 <ul class="features-list">
-                    <li>✅ Everything in Pro, plus:</li>
+                    <li>✅ <strong>All Pro features</strong></li>
                     <li>👥 <strong>5 user seats</strong> (add more at $30/user)</li>
                     <li>🔔 <strong>Shared alerts</strong> (team notifications)</li>
                     <li>📊 <strong>Slack/webhook integrations</strong></li>
                     <li>📝 <strong>Audit trail</strong> (who triggered what)</li>
-                    <li>🔌 <strong>Higher API limits</strong> (10,000 req/day)</li>
+                    <li>🔌 <strong>10x API limits</strong> (10,000 req/day)</li>
                     <li>📞 <strong>Priority support</strong> (24hr SLA)</li>
                     <li>🔐 <strong>SSO ready</strong> (coming Q2 2025)</li>
                     <li>📋 <strong>Custom playbooks</strong></li>
-                    <li>💼 Invoice billing</li>
+                    <li>💼 <strong>Invoice billing</strong></li>
                 </ul>
                 <a href="/enterprise" class="cta-button secondary">Contact Sales →</a>
             </div>
