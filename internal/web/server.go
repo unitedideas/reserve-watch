@@ -458,63 +458,54 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
         </header>
 
-        {{if or .HasRealtime .HasOfficial}}
-        <div class="hero-stats">
-            {{if .HasRealtime}}
+        {{if .HasData}}
+        <div class="hero-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1400px; margin: 30px auto;">
+            {{range .Cards}}
             <div class="stat-card">
-                <div class="stat-label">🔴 LIVE Market Price</div>
-                <div class="stat-value" style="color: #4CAF50;">{{printf "%.2f" .RealtimeValue}}</div>
-                <div class="stat-date">Yahoo Finance • {{.RealtimeDate}}</div>
-            </div>
-            {{end}}
-            
-            {{if .HasOfficial}}
-            <div class="stat-card">
-                <div class="stat-label">📊 Nominal Broad U.S. Dollar Index</div>
-                <div class="stat-value">{{printf "%.2f" .OfficialValue}}</div>
+                <div class="stat-label">{{.Label}}</div>
+                <div class="stat-value">{{.Value}}</div>
                 <div class="stat-date">
-                    <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank" style="color: #667eea; text-decoration: none;">
-                        FRED DTWEXBGS
-                    </a> • Data: {{.OfficialDate}}
+                    <a href="{{.Link}}" target="_blank" style="color: #667eea; text-decoration: none;">
+                        {{.Source}}
+                    </a> • {{.Date}}
                 </div>
             </div>
             {{end}}
         </div>
 
+        <!-- Proprietary Indices Section -->
+        <div class="main-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
+            <h2 style="text-align: center; margin-bottom: 30px;">🎯 Proprietary De-Dollarization Indices</h2>
+            <div class="features">
+                <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
+                    <div class="feature-icon">🌍</div>
+                    <h3>RMB Penetration Score</h3>
+                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">Coming Soon</p>
+                    <p style="opacity: 0.9;">Combines SWIFT payment share × COFER reserves × CIPS reach</p>
+                </div>
+                <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Reserve Diversification Pressure</h3>
+                    <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">Coming Soon</p>
+                    <p style="opacity: 0.9;">Measures gold reserve trends + central bank buying</p>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 30px; opacity: 0.8; font-size: 0.9em;">
+                Sources: IMF COFER • SWIFT RMB Tracker • CIPS • World Gold Council • Federal Reserve
+            </p>
+        </div>
+
         <div class="main-content">
-            <h2 style="text-align: center; margin-bottom: 30px;">📊 Historical Trend (Last 30 Days)</h2>
+            <h2 style="text-align: center; margin-bottom: 30px;">📊 USD Index Historical Trend (Last 30 Days)</h2>
             <div class="chart-container">
                 <canvas id="usdChart"></canvas>
-            </div>
-
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">📈</div>
-                    <h3>Daily Updates</h3>
-                    <p>Automatic tracking of USD strength from Federal Reserve data</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🔔</div>
-                    <h3>Smart Alerts</h3>
-                    <p>Get notified of significant changes in dollar valuation</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📊</div>
-                    <h3>Visual Analysis</h3>
-                    <p>Beautiful charts showing long-term de-dollarization trends</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🔌</div>
-                    <h3>Developer API</h3>
-                    <p>Access raw data for your own applications</p>
-                </div>
             </div>
         </div>
         {{else}}
         <div class="main-content">
             <div class="no-data">
-                <h2>⏳ Initializing Data Sources...</h2>
-                <p>Connecting to Yahoo Finance (real-time) and FRED (official data)...</p>
+                <h2>⏳ Initializing Multi-Source Dashboard...</h2>
+                <p>Connecting to 6 data sources: FRED • Yahoo Finance • IMF • SWIFT • CIPS • World Gold Council</p>
                 <p style="margin-top: 20px;">First data fetch happens at next scheduled run (9:00 AM daily).</p>
                 <p>Or refresh this page in a few minutes!</p>
             </div>
@@ -562,12 +553,13 @@ const homeTemplate = `<!DOCTYPE html>
         </footer>
     </div>
 
-    {{if .HasOfficial}}
+    {{if .DataPointsJSON}}
     <script>
         // Prepare chart data
         const chartData = {{.DataPointsJSON}};
-        const labels = chartData.map(d => d.date).reverse();
-        const values = chartData.map(d => d.value).reverse();
+        if (chartData && chartData.length > 0) {
+            const labels = chartData.map(d => d.Date).reverse();
+            const values = chartData.map(d => d.Value).reverse();
 
         // Create chart
         const ctx = document.getElementById('usdChart').getContext('2d');
@@ -615,6 +607,7 @@ const homeTemplate = `<!DOCTYPE html>
                 }
             }
         });
+        }
     </script>
     {{end}}
 </body>
