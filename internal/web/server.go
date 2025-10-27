@@ -303,13 +303,18 @@ const homeTemplate = `<!DOCTYPE html>
         .main-nav {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 20px;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            margin: 20px 0 40px 0;
+            border-radius: var(--radius-lg);
+            margin: var(--space-3) 0;
             flex-wrap: wrap;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
         }
         
         .nav-link {
@@ -346,21 +351,45 @@ const homeTemplate = `<!DOCTYPE html>
             margin-bottom: 30px;
         }
         
+        /* 8pt Spacing System */
+        :root {
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        
         .hero-stats {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--space-3);
+            max-width: 1400px;
+            margin: var(--space-4) auto;
+            padding: 0 var(--space-2);
         }
         
         .stat-card {
             background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            min-width: 250px;
-            text-align: center;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            text-align: left;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
         
         .stat-label {
@@ -380,7 +409,91 @@ const homeTemplate = `<!DOCTYPE html>
         .stat-date {
             color: #999;
             font-size: 0.85em;
-            margin-top: 5px;
+            margin-top: var(--space-1);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: var(--space-2) 0 var(--space-1) 0;
+        }
+        
+        .status-good {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-neutral {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .status-watch {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .status-crisis {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .status-why {
+            font-size: 0.9em;
+            color: #555;
+            margin: var(--space-2) 0;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        
+        /* Action Button */
+        .action-button {
+            display: inline-block;
+            padding: var(--space-1) var(--space-2);
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: var(--space-2);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .action-button:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        /* Accessibility */
+        *:focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
         }
         
         .main-content {
@@ -529,16 +642,40 @@ const homeTemplate = `<!DOCTYPE html>
         </nav>
 
         {{if .HasData}}
-        <div class="hero-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1400px; margin: 30px auto;">
+        <div class="hero-stats">
             {{range .Cards}}
             <div class="stat-card">
                 <div class="stat-label">{{.Label}}</div>
                 <div class="stat-value">{{.Value}}</div>
+                
+                {{if .Status}}
+                <div class="status-badge {{.StatusBadge}}" role="status" aria-live="polite">
+                    {{.Status}}
+                </div>
+                {{end}}
+                
+                {{if .Why}}
+                <div class="status-why">{{.Why}}</div>
+                {{end}}
+                
                 <div class="stat-date">
-                    <a href="{{.Link}}" target="_blank" style="color: #667eea; text-decoration: none;">
+                    <a href="{{.Link}}" target="_blank" style="color: #667eea; text-decoration: none;" rel="noopener noreferrer">
                         {{.Source}}
                     </a> • {{.Date}}
                 </div>
+                
+                {{if .SourceUpdated}}
+                <div style="font-size: 0.75em; color: #999; margin-top: 4px;">
+                    <span title="When the data source last updated">Source: {{.SourceUpdated}}</span> | 
+                    <span title="When we fetched the data">Fetched: {{.IngestedAt}}</span>
+                </div>
+                {{end}}
+                
+                {{if .ActionLabel}}
+                <a href="{{.ActionURL}}" class="action-button" aria-label="{{.ActionLabel}}">
+                    {{.ActionLabel}} →
+                </a>
+                {{end}}
             </div>
             {{end}}
         </div>
@@ -629,11 +766,46 @@ const homeTemplate = `<!DOCTYPE html>
             </p>
         </div>
 
-        <footer>
-            <p>&copy; 2025 Reserve Watch • Powered by Federal Reserve Economic Data (FRED)</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">
-                Data updated daily • Not investment advice
-            </p>
+        <footer style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin-top: var(--space-6); padding: var(--space-6) var(--space-3);">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-4);">
+                    <div>
+                        <h3 style="color: white; font-size: 1em; margin-bottom: var(--space-2);">Product</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: var(--space-1);"><a href="/" style="color: rgba(255,255,255,0.7); text-decoration: none;">Dashboard</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/methodology" style="color: rgba(255,255,255,0.7); text-decoration: none;">Methodology</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/trigger-watch" style="color: rgba(255,255,255,0.7); text-decoration: none;">Trigger Watch</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/crash-drill" style="color: rgba(255,255,255,0.7); text-decoration: none;">Crash-Drill</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: white; font-size: 1em; margin-bottom: var(--space-2);">Plans</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: var(--space-1);"><a href="/pricing" style="color: rgba(255,255,255,0.7); text-decoration: none;">Pricing</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/enterprise" style="color: rgba(255,255,255,0.7); text-decoration: none;">Enterprise</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: white; font-size: 1em; margin-bottom: var(--space-2);">Developers</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: var(--space-1);"><a href="/api/latest" style="color: rgba(255,255,255,0.7); text-decoration: none;">API</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/api/signals/latest" style="color: rgba(255,255,255,0.7); text-decoration: none;">Signals API</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="/api/indices" style="color: rgba(255,255,255,0.7); text-decoration: none;">Indices API</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="color: white; font-size: 1em; margin-bottom: var(--space-2);">Company</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: var(--space-1);"><a href="mailto:contact@reserve.watch" style="color: rgba(255,255,255,0.7); text-decoration: none;">Contact</a></li>
+                            <li style="margin-bottom: var(--space-1);"><a href="https://github.com/unitedideas/reserve-watch" style="color: rgba(255,255,255,0.7); text-decoration: none;" target="_blank" rel="noopener">GitHub</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="text-align: center; padding-top: var(--space-4); border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">
+                    <p style="margin-bottom: var(--space-1);">© 2025 Reserve Watch • Data updated daily • Not investment advice</p>
+                    <p style="font-size: 0.85em;">Monitoring de-dollarization trends since 2024</p>
+                </div>
+            </div>
         </footer>
     </div>
 
