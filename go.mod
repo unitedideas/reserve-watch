@@ -1,6 +1,6 @@
 module reserve-watch
 
-go 1.25.3
+go 1.22
 
 require (
 	github.com/fogleman/gg v1.3.0
