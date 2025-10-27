@@ -56,6 +56,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/export/csv", s.handleExportCSV)
 	mux.HandleFunc("/api/export/json", s.handleExportJSON)
 	mux.HandleFunc("/api/export/all", s.handleExportAll)
+	mux.HandleFunc("/api/signals/latest", s.handleAPISignals)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
