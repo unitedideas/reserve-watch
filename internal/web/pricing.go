@@ -221,6 +221,56 @@ const pricingTemplate = `<!DOCTYPE html>
             </div>
         </div>
 
+        <!-- FAQ Section -->
+        <div style="max-width: 800px; margin: 60px auto; padding: 40px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="text-align: center; margin-bottom: 40px; color: white;">Frequently Asked Questions</h2>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">💳 Can I cancel anytime?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Yes. Cancel anytime from your account dashboard. No long-term contracts, no cancellation fees. Your access continues until the end of your billing period.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">📊 Where does the data come from?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">All data is sourced from official institutions: Federal Reserve (FRED), IMF COFER, SWIFT RMB Tracker, CIPS, World Gold Council, and Yahoo Finance (for indicative real-time DXY). Full attribution and licensing details on our <a href="/methodology" style="color: #667eea;">Methodology page</a>.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">⚖️ What are the data licensing terms?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">You may use the data for personal or internal business analysis. Redistribution or commercial resale of raw data is prohibited. Our proprietary indices (RMB Penetration Score, Diversification Pressure) are our intellectual property. See individual source terms on the Methodology page.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">🔄 Is there a refund policy?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Yes. If you're not satisfied within the first 14 days, email <a href="mailto:contact@reserve.watch" style="color: #667eea;">contact@reserve.watch</a> for a full refund, no questions asked.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">🔔 How do alerts work?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Set custom threshold alerts (e.g., "DXY > 125" or "RMB payments > 3%"). When triggered, you'll receive an instant webhook POST to your specified URL with JSON payload. Perfect for integrating with Zapier, Slack, email, or your own systems.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">📈 How often is data updated?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Real-time DXY updates every 15 minutes during market hours (9 AM - 5 PM EDT, Mon-Fri). All other sources update daily at 6 AM EST. Source frequencies: FRED (daily), IMF COFER (quarterly), SWIFT (monthly), CIPS (as published), WGC (quarterly).</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">🔌 What's included in API access?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Premium includes 1,000 API requests/day across all endpoints: /api/latest, /api/history, /api/indices, /api/signals/latest, /api/export/*. Full documentation with code examples (curl, JavaScript, Go) available at <a href="/api/latest" style="color: #667eea;">/api/latest</a>.</p>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: white; margin-bottom: 10px;">🏢 Do you offer team or enterprise plans?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">Yes. Enterprise includes SSO, custom reports, white-labeling, dedicated support, and unlimited API access. Contact <a href="mailto:enterprise@reserve.watch" style="color: #667eea;">enterprise@reserve.watch</a> or visit our <a href="/enterprise" style="color: #667eea;">Enterprise page</a>.</p>
+            </div>
+            
+            <div>
+                <h3 style="color: white; margin-bottom: 10px;">⚠️ Is this investment advice?</h3>
+                <p style="opacity: 0.9; line-height: 1.6;">No. Reserve Watch provides data analysis and monitoring tools only. We are not registered investment advisors. All data is for informational purposes. Consult a qualified financial advisor before making investment decisions.</p>
+            </div>
+        </div>
+
         <div class="footer">
             <p>Join investors monitoring the biggest financial shift since Bretton Woods.</p>
             <p style="margin-top: 20px;"><a href="/">← Back to Dashboard</a></p>

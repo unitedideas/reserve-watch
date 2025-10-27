@@ -46,6 +46,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/pricing", s.handlePricing)
 	mux.HandleFunc("/enterprise", s.handleEnterprise)
 	mux.HandleFunc("/success", s.handleSuccess)
+	mux.HandleFunc("/api/docs", s.handleAPIDocs)
 	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
@@ -638,7 +639,7 @@ const homeTemplate = `<!DOCTYPE html>
             <a href="/trigger-watch" class="nav-link">Trigger Watch</a>
             <a href="/crash-drill" class="nav-link">Crash-Drill</a>
             <a href="/pricing" class="nav-link">Pricing</a>
-            <a href="/api/latest" class="nav-link">API</a>
+            <a href="/api/docs" class="nav-link">API</a>
         </nav>
 
         {{if .HasData}}
