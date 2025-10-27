@@ -303,5 +303,3 @@ const triggerTemplate = `<!DOCTYPE html>
     </div>
 </body>
 </html>`
-
-
