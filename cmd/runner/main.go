@@ -329,13 +329,16 @@ func min(a, b int) int {
 
 // bootstrapMockData loads mock data if the database is empty
 func bootstrapMockData(db *store.Store) error {
-	// Check if data already exists
+	// Check if core data already exists
+	hasData := false
 	if existing, _ := db.GetLatestPoint("SWIFT_RMB"); existing != nil {
-		util.InfoLogger.Println("Database already has data, skipping bootstrap")
-		return nil
+		hasData = true
+		util.InfoLogger.Println("Database already has core data, checking for missing series...")
+	} else {
+		util.InfoLogger.Println("Bootstrapping with mock data...")
 	}
 	
-	util.InfoLogger.Println("Bootstrapping with mock data...")
+	if !hasData {
 	
 	// Load SWIFT RMB mock data
 	swiftData := ingest.GetMockRMBData()
@@ -380,7 +383,11 @@ func bootstrapMockData(db *store.Store) error {
 		return fmt.Errorf("failed to save COFER mock data: %w", err)
 	}
 	util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
+	}
 	
+	// Always add VIX and BBB OAS if missing (for Trigger Watch page)
+	if existing, _ := db.GetLatestPoint("VIXCLS"); existing == nil {
+		util.InfoLogger.Println("Adding VIX mock data...")
 	// Add VIX (Volatility Index) mock data for Trigger Watch
 	vixPoint := store.SeriesPoint{
 		Date:  time.Now().Format("2006-01-02"),
@@ -395,7 +402,10 @@ func bootstrapMockData(db *store.Store) error {
 		return fmt.Errorf("failed to save VIX mock data: %w", err)
 	}
 	util.InfoLogger.Println("✓ Loaded VIX mock data")
+	}
 	
+	if existing, _ := db.GetLatestPoint("BAMLC0A4CBBB"); existing == nil {
+		util.InfoLogger.Println("Adding BBB OAS mock data...")
 	// Add BBB OAS (Credit Spread) mock data for Trigger Watch
 	bbbPoint := store.SeriesPoint{
 		Date:  time.Now().Format("2006-01-02"),
@@ -410,6 +420,7 @@ func bootstrapMockData(db *store.Store) error {
 		return fmt.Errorf("failed to save BBB OAS mock data: %w", err)
 	}
 	util.InfoLogger.Println("✓ Loaded BBB OAS mock data")
+	}
 	
 	util.InfoLogger.Println("Mock data bootstrap complete!")
 	return nil
