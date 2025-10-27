@@ -272,13 +272,13 @@ func GetAllSignals(db *store.Store) (map[string]Signal, error) {
 // GetActionURL returns the URL for a given action
 func GetActionURL(action string) string {
 	urls := map[string]string{
-		"open_hedge_checklist":      "/crash-drill#hedge",
-		"rmb_settlement_readiness":  "/crash-drill#rmb",
-		"bank_enablement":           "/crash-drill#bank",
-		"gold_proof_pack":           "/crash-drill#gold",
-		"prepare_checklist":         "/crash-drill",
-		"open_crash_drill":          "/crash-drill",
-		"none":                      "",
+		"open_hedge_checklist":     "/crash-drill#hedge",
+		"rmb_settlement_readiness": "/crash-drill#rmb",
+		"bank_enablement":          "/crash-drill#bank",
+		"gold_proof_pack":          "/crash-drill#gold",
+		"prepare_checklist":        "/crash-drill",
+		"open_crash_drill":         "/crash-drill",
+		"none":                     "",
 	}
 
 	if url, ok := urls[action]; ok {
@@ -286,4 +286,3 @@ func GetActionURL(action string) string {
 	}
 	return ""
 }
-
