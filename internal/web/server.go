@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/stripe/stripe-go/v76"
 	"reserve-watch/internal/analytics"
 	"reserve-watch/internal/store"
 	"reserve-watch/internal/util"
+
+	"github.com/stripe/stripe-go/v76"
 )
 
 type Server struct {
@@ -24,7 +25,7 @@ func NewServer(store *store.Store, port string, stripeKey string) *Server {
 	if stripeKey != "" {
 		stripe.Key = stripeKey
 	}
-	
+
 	return &Server{
 		store:     store,
 		port:      port,

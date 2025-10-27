@@ -184,8 +184,8 @@ const pricingTemplate = `<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1>💰 Choose Your Plan</h1>
-        <p class="subtitle">Track de-dollarization trends with real-time data and proprietary indices</p>
+        <h1>💰 Unlock Full Access</h1>
+        <p class="subtitle">Get real-time de-dollarization intelligence that institutional investors pay thousands for</p>
 
         <nav class="main-nav">
             <a href="/" class="nav-link">Dashboard</a>
@@ -196,69 +196,40 @@ const pricingTemplate = `<!DOCTYPE html>
             <a href="/api/latest" class="nav-link">API</a>
         </nav>
 
-        <div class="pricing-grid">
-            <!-- Free Tier -->
-            <div class="pricing-card">
-                <div class="tier-name">Free</div>
-                <div class="tier-price">$0<span class="period">/month</span></div>
-                <p class="tier-description">Perfect for getting started with de-dollarization tracking</p>
-                <ul class="features-list">
-                    <li>6 data sources (FRED, Yahoo, IMF, SWIFT, CIPS, WGC)</li>
-                    <li>Daily data updates (6 AM EST)</li>
-                    <li>Historical charts (30 days)</li>
-                    <li>Public API access (100 req/day)</li>
-                    <li>Basic dashboard view</li>
-                </ul>
-                <a href="/" class="cta-button secondary">Get Started Free</a>
-            </div>
-
-            <!-- Pro Tier (Featured) -->
+        <div class="pricing-grid" style="max-width: 500px; margin: 0 auto;">
+            <!-- Premium Tier -->
             <div class="pricing-card featured">
-                <div class="featured-badge">MOST POPULAR</div>
-                <div class="tier-name">Pro</div>
-                <div class="tier-price">$9<span class="period">/month</span></div>
-                <p class="tier-description">For serious investors who need real-time insights</p>
+                <div class="featured-badge">LIMITED ACCESS</div>
+                <div class="tier-name">Reserve Watch Premium</div>
+                <div class="tier-price">$74.99<span class="period">/month</span></div>
+                <p class="tier-description">Professional de-dollarization intelligence for serious investors</p>
                 <ul class="features-list">
-                    <li>Everything in Free, plus:</li>
-                    <li>🔴 Real-time DXY updates (every 15min)</li>
-                    <li>🎯 Live proprietary indices (RMB Score, Diversification Pressure)</li>
-                    <li>📊 Extended history (5 years)</li>
-                    <li>🔔 Custom alerts & webhooks</li>
-                    <li>📥 CSV/JSON exports</li>
-                    <li>📈 Trend analysis & forecasts</li>
-                    <li>Priority API (1,000 req/day)</li>
+                    <li>🔴 Real-time DXY updates (every 15 minutes)</li>
+                    <li>🎯 Live proprietary indices (RMB Penetration Score + Reserve Diversification Pressure)</li>
+                    <li>📊 6 premium data sources (FRED, Yahoo, IMF COFER, SWIFT RMB, CIPS, World Gold Council)</li>
+                    <li>📈 Extended historical data (5+ years)</li>
+                    <li>🔔 Custom threshold alerts & webhooks</li>
+                    <li>📥 Full CSV/JSON data exports</li>
+                    <li>🚨 VIX + BBB OAS trigger monitoring</li>
+                    <li>📋 Crash-Drill emergency checklists</li>
+                    <li>📞 Priority email support</li>
+                    <li>🔌 Full API access (1,000 req/day)</li>
+                    <li>💡 Daily market insights & analysis</li>
                 </ul>
-                <button onclick="checkout('price_pro', 'Pro')" class="cta-button" id="pro-btn">Start Pro Plan - $9/mo</button>
-            </div>
-
-            <!-- Team Tier -->
-            <div class="pricing-card">
-                <div class="tier-name">Team</div>
-                <div class="tier-price">$39<span class="period">/user/month</span></div>
-                <p class="tier-description">For teams and institutions tracking macro trends</p>
-                <ul class="features-list">
-                    <li>Everything in Pro, plus:</li>
-                    <li>👥 Team dashboard & shared alerts</li>
-                    <li>🔐 SSO & user management</li>
-                    <li>📑 Custom reports & whitelabeling</li>
-                    <li>🎓 Training & onboarding</li>
-                    <li>📞 Priority support (Slack/email)</li>
-                    <li>🔌 Unlimited API access</li>
-                    <li>📊 Advanced analytics & backtesting</li>
-                </ul>
-                <button onclick="checkout('price_team', 'Team')" class="cta-button" id="team-btn">Contact Sales for Team</button>
+                <button onclick="checkout('price_1SMj0xEviKQE06yxOMB0aImp', 'Premium')" class="cta-button" id="premium-btn">Start Premium - $74.99/mo</button>
+                <p style="text-align: center; margin-top: 20px; font-size: 0.9em; opacity: 0.8;">Cancel anytime. Institutional-grade intelligence at a fraction of Bloomberg cost.</p>
             </div>
         </div>
 
         <div class="footer">
-            <p>All plans include access to our daily newsletter and community insights.</p>
+            <p>Join investors monitoring the biggest financial shift since Bretton Woods.</p>
             <p style="margin-top: 20px;"><a href="/">← Back to Dashboard</a></p>
         </div>
     </div>
 
     <script>
         async function checkout(priceId, plan) {
-            const btn = plan === 'Pro' ? document.getElementById('pro-btn') : document.getElementById('team-btn');
+            const btn = document.getElementById('premium-btn');
             const originalText = btn.textContent;
             btn.textContent = 'Loading...';
             btn.disabled = true;

@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"reserve-watch/internal/util"
+
 	"github.com/stripe/stripe-go/v76"
 	"github.com/stripe/stripe-go/v76/checkout/session"
-	"reserve-watch/internal/util"
 )
 
 // handleStripeCheckout creates a Stripe Checkout session
@@ -62,7 +63,7 @@ func (s *Server) handleStripeCheckout(w http.ResponseWriter, r *http.Request) {
 // handleSuccess shows success page after Stripe checkout
 func (s *Server) handleSuccess(w http.ResponseWriter, r *http.Request) {
 	sessionID := r.URL.Query().Get("session_id")
-	
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(`<!DOCTYPE html>
 <html lang="en">
@@ -133,14 +134,17 @@ func (s *Server) handleSuccess(w http.ResponseWriter, r *http.Request) {
 <body>
     <div class="container">
         <div class="success-icon">✅</div>
-        <h1>Welcome to Reserve Watch Pro!</h1>
-        <p>Your subscription is now active. You now have access to:</p>
+        <h1>Welcome to Reserve Watch Premium!</h1>
+        <p>Your subscription is now active. You now have full access to:</p>
         <ul style="text-align: left; margin: 20px 0; line-height: 2; list-style-position: inside;">
-            <li>🔴 Real-time DXY updates (every 15min)</li>
-            <li>🎯 Live proprietary indices</li>
-            <li>🔔 Custom alerts & webhooks</li>
-            <li>📥 CSV/JSON exports</li>
-            <li>📈 Extended history (5 years)</li>
+            <li>🔴 Real-time DXY updates (every 15 minutes)</li>
+            <li>🎯 Live proprietary indices (RMB Score + Diversification Pressure)</li>
+            <li>📊 All 6 premium data sources</li>
+            <li>🔔 Custom threshold alerts & webhooks</li>
+            <li>📥 Full CSV/JSON data exports</li>
+            <li>🚨 VIX + BBB OAS trigger monitoring</li>
+            <li>📋 Crash-Drill emergency checklists</li>
+            <li>📈 Extended historical data (5+ years)</li>
         </ul>
         <p>Check your email for your receipt and account details.</p>
         ` + (func() string {
@@ -154,4 +158,3 @@ func (s *Server) handleSuccess(w http.ResponseWriter, r *http.Request) {
 </body>
 </html>`))
 }
-
