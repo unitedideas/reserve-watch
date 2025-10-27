@@ -638,8 +638,11 @@ const homeTemplate = `<!DOCTYPE html>
 
         <!-- Proprietary Indices Section -->
         <div class="main-content" style="background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); color: white; margin-top: 40px; border: 1px solid rgba(255, 255, 255, 0.2); position: relative;">
-            <div style="background: #FFD700; color: #000; padding: 8px 20px; text-align: center; font-weight: 700; border-radius: 15px 15px 0 0; margin: -20px -20px 20px -20px;">
-                ⭐ PREMIUM FEATURE - Subscribe for live updates & alerts
+            <div style="background: #FFD700; color: #000; padding: 8px 20px; text-align: center; font-weight: 700; border-radius: 15px 15px 0 0; margin: -20px -20px 20px -20px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <span>⭐ PREMIUM FEATURE - Subscribe for live updates & alerts</span>
+                <a href="/pricing" style="background: #000; color: #FFD700; padding: 6px 20px; border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 700; white-space: nowrap; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    Upgrade Now →
+                </a>
             </div>
             <h2 style="text-align: center; margin-bottom: 30px;">🎯 Proprietary De-Dollarization Indices</h2>
             <div class="features">
