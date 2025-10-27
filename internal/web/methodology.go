@@ -94,8 +94,9 @@ const methodologyTemplate = `<!DOCTYPE html>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f8f9fa;
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
+            min-height: 100vh;
         }
         
         .container {
@@ -116,17 +117,19 @@ const methodologyTemplate = `<!DOCTYPE html>
         }
         
         .intro {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .source-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             padding: 25px;
             border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-left: 4px solid #667eea;
@@ -312,5 +315,3 @@ const methodologyTemplate = `<!DOCTYPE html>
     </div>
 </body>
 </html>`
-
-

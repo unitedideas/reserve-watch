@@ -21,7 +21,7 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 	// Determine crisis level
 	crisisLevel := "normal"
 	alertMessage := "Markets are stable. Review protocols for preparedness."
-	
+
 	if vixData != nil && bbbData != nil {
 		if vixData.Value > 30 || bbbData.Value > 400 {
 			crisisLevel = "critical"
@@ -34,9 +34,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 
 	checklist := []ChecklistItem{
 		{
-			Icon:     "🏦",
-			Title:    "Treasury Bill Ladder Setup",
-			Priority: "critical",
+			Icon:        "🏦",
+			Title:       "Treasury Bill Ladder Setup",
+			Priority:    "critical",
 			Description: "Lock in risk-free yield and preserve capital during volatility",
 			Steps: []string{
 				"Open TreasuryDirect.gov account (30 minutes)",
@@ -47,9 +47,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		{
-			Icon:     "💱",
-			Title:    "RMB Payment Rail Switch",
-			Priority: "high",
+			Icon:        "💱",
+			Title:       "RMB Payment Rail Switch",
+			Priority:    "high",
 			Description: "Establish alternative payment infrastructure outside USD system",
 			Steps: []string{
 				"Open account with bank supporting CIPS (e.g., Bank of China, ICBC)",
@@ -60,9 +60,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		{
-			Icon:     "🥇",
-			Title:    "Physical Gold Proof Pack",
-			Priority: "high",
+			Icon:        "🥇",
+			Title:       "Physical Gold Proof Pack",
+			Priority:    "high",
 			Description: "Secure verifiable store of value outside financial system",
 			Steps: []string{
 				"Purchase 1-5 oz gold coins from reputable dealer (APMEX, JM Bullion)",
@@ -73,9 +73,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		{
-			Icon:     "📊",
-			Title:    "Portfolio Diversification Audit",
-			Priority: "medium",
+			Icon:        "📊",
+			Title:       "Portfolio Diversification Audit",
+			Priority:    "medium",
 			Description: "Reduce concentration risk across currencies and assets",
 			Steps: []string{
 				"Calculate current USD exposure (aim for <70% of liquid assets)",
@@ -86,9 +86,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		{
-			Icon:     "🔐",
-			Title:    "Cold Storage Crypto Backup",
-			Priority: "medium",
+			Icon:        "🔐",
+			Title:       "Cold Storage Crypto Backup",
+			Priority:    "medium",
 			Description: "Maintain censorship-resistant value transfer capability",
 			Steps: []string{
 				"Purchase hardware wallet (Ledger, Trezor)",
@@ -99,9 +99,9 @@ func (s *Server) handleCrashDrill(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		{
-			Icon:     "📄",
-			Title:    "Legal Structure Documentation",
-			Priority: "medium",
+			Icon:        "📄",
+			Title:       "Legal Structure Documentation",
+			Priority:    "medium",
 			Description: "Establish asset protection and succession framework",
 			Steps: []string{
 				"Consult estate planning attorney for trust/LLC structures",
@@ -156,8 +156,8 @@ const crashDrillTemplate = `<!DOCTYPE html>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
             min-height: 100vh;
             padding: 40px 20px;
         }
@@ -452,7 +452,7 @@ const crashDrillTemplate = `<!DOCTYPE html>
 func (s *Server) handleCrashDrillPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Content-Disposition", "inline; filename=crash-drill-checklist.html")
-	
+
 	tmpl := template.Must(template.New("pdf").Parse(pdfTemplate))
 	tmpl.Execute(w, nil)
 }
@@ -645,4 +645,3 @@ const pdfTemplate = `<!DOCTYPE html>
     </div>
 </body>
 </html>`
-

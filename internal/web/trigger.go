@@ -111,8 +111,8 @@ const triggerTemplate = `<!DOCTYPE html>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
             min-height: 100vh;
             padding: 40px 20px;
         }
