@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -91,7 +92,7 @@ func (s *Server) handleTriggerWatch(w http.ResponseWriter, r *http.Request) {
 
 func formatFloat(val float64, decimals int) string {
 	format := "%." + string(rune(decimals+'0')) + "f"
-	return format
+	return fmt.Sprintf(format, val)
 }
 
 const triggerTemplate = `<!DOCTYPE html>

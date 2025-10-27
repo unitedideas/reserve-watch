@@ -381,6 +381,36 @@ func bootstrapMockData(db *store.Store) error {
 	}
 	util.InfoLogger.Println("✓ Loaded IMF COFER mock data")
 	
+	// Add VIX (Volatility Index) mock data for Trigger Watch
+	vixPoint := store.SeriesPoint{
+		Date:  time.Now().Format("2006-01-02"),
+		Value: 15.2, // Recent typical value (safe range)
+		Meta: map[string]string{
+			"series_id": "VIXCLS",
+			"source":    "FRED",
+			"unit":      "index",
+		},
+	}
+	if err := db.SavePoints("VIXCLS", []store.SeriesPoint{vixPoint}, time.Now()); err != nil {
+		return fmt.Errorf("failed to save VIX mock data: %w", err)
+	}
+	util.InfoLogger.Println("✓ Loaded VIX mock data")
+	
+	// Add BBB OAS (Credit Spread) mock data for Trigger Watch
+	bbbPoint := store.SeriesPoint{
+		Date:  time.Now().Format("2006-01-02"),
+		Value: 145.0, // Recent typical value (safe range, < 200bps)
+		Meta: map[string]string{
+			"series_id": "BAMLC0A4CBBB",
+			"source":    "FRED",
+			"unit":      "basis_points",
+		},
+	}
+	if err := db.SavePoints("BAMLC0A4CBBB", []store.SeriesPoint{bbbPoint}, time.Now()); err != nil {
+		return fmt.Errorf("failed to save BBB OAS mock data: %w", err)
+	}
+	util.InfoLogger.Println("✓ Loaded BBB OAS mock data")
+	
 	util.InfoLogger.Println("Mock data bootstrap complete!")
 	return nil
 }
