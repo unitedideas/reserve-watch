@@ -63,8 +63,10 @@ func main() {
 
 	c := cron.New()
 
-	c.AddFunc("0 9 * * *", func() {
-		util.InfoLogger.Println("Running daily FRED check...")
+	// Daily update at 6:00 AM EST (11:00 AM UTC)
+	// Gives traders 3.5 hours to review before market open (9:30 AM EST)
+	c.AddFunc("0 11 * * *", func() {
+		util.InfoLogger.Println("Running daily data update (6 AM EST / 3 AM PST)...")
 		if err := app.RunDailyCheck(); err != nil {
 			util.ErrorLogger.Printf("Daily check failed: %v", err)
 		}
