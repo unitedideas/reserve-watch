@@ -45,7 +45,37 @@ const pricingTemplate = `<!DOCTYPE html>
             text-align: center;
             color: white;
             font-size: 1.2em;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
+        }
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin: 20px 0 40px 0;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-link {
+            padding: 12px 24px;
+            color: #e0e0e0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
         }
         .pricing-grid {
             display: grid;
@@ -156,6 +186,15 @@ const pricingTemplate = `<!DOCTYPE html>
     <div class="container">
         <h1>💰 Choose Your Plan</h1>
         <p class="subtitle">Track de-dollarization trends with real-time data and proprietary indices</p>
+
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/methodology" class="nav-link">Methodology</a>
+            <a href="/trigger-watch" class="nav-link">Trigger Watch</a>
+            <a href="/crash-drill" class="nav-link">Crash-Drill</a>
+            <a href="/pricing" class="nav-link active">Pricing</a>
+            <a href="/api/latest" class="nav-link">API</a>
+        </nav>
 
         <div class="pricing-grid">
             <!-- Free Tier -->

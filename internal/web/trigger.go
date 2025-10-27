@@ -125,7 +125,41 @@ const triggerTemplate = `<!DOCTYPE html>
         header {
             text-align: center;
             color: white;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin: 20px 0 40px 0;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-link {
+            padding: 12px 24px;
+            color: #e0e0e0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
         h1 {
@@ -256,6 +290,15 @@ const triggerTemplate = `<!DOCTYPE html>
             <h1>⚠️ Trigger Watch</h1>
             <p>Real-time crisis indicators from Federal Reserve data</p>
         </header>
+
+        <nav class="main-nav">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/methodology" class="nav-link">Methodology</a>
+            <a href="/trigger-watch" class="nav-link active">Trigger Watch</a>
+            <a href="/crash-drill" class="nav-link">Crash-Drill</a>
+            <a href="/pricing" class="nav-link">Pricing</a>
+            <a href="/api/latest" class="nav-link">API</a>
+        </nav>
 
         {{if .HasData}}
         {{range .Triggers}}
