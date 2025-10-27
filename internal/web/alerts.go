@@ -48,6 +48,16 @@ func (s *Server) handleListAlerts(w http.ResponseWriter, r *http.Request) {
 
 // handleCreateAlert creates a new alert
 func (s *Server) handleCreateAlert(w http.ResponseWriter, r *http.Request) {
+	// Pro feature: return payment required for demo (in production, check actual subscription status)
+	w.WriteHeader(http.StatusPaymentRequired)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"error":   "Pro subscription required",
+		"message": "Alerts are a Pro feature. Upgrade to set custom threshold alerts with email/webhook delivery.",
+		"upgrade_url": "https://reserve.watch/pricing",
+		"price": "$74.99/month",
+	})
+	return
+
 	var req struct {
 		UserEmail  string  `json:"user_email"`
 		Name       string  `json:"name"`

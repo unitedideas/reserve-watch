@@ -12,6 +12,17 @@ import (
 
 // handleExportCSV exports data as CSV
 func (s *Server) handleExportCSV(w http.ResponseWriter, r *http.Request) {
+	// Pro feature: return payment required for demo
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusPaymentRequired)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"error":   "Pro subscription required",
+		"message": "CSV exports are a Pro feature. Upgrade to download full historical data.",
+		"upgrade_url": "https://reserve.watch/pricing",
+		"price": "$74.99/month",
+	})
+	return
+
 	seriesID := r.URL.Query().Get("series")
 	if seriesID == "" {
 		http.Error(w, "series parameter required", http.StatusBadRequest)
@@ -61,6 +72,17 @@ func (s *Server) handleExportCSV(w http.ResponseWriter, r *http.Request) {
 
 // handleExportJSON exports data as JSON
 func (s *Server) handleExportJSON(w http.ResponseWriter, r *http.Request) {
+	// Pro feature: return payment required for demo
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusPaymentRequired)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"error":   "Pro subscription required",
+		"message": "JSON exports are a Pro feature. Upgrade to download full historical data.",
+		"upgrade_url": "https://reserve.watch/pricing",
+		"price": "$74.99/month",
+	})
+	return
+
 	seriesID := r.URL.Query().Get("series")
 	if seriesID == "" {
 		w.WriteHeader(http.StatusBadRequest)
