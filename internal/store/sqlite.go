@@ -28,6 +28,29 @@ type Post struct {
 	Status      string
 }
 
+type Alert struct {
+	ID              int64
+	UserEmail       string
+	Name            string
+	SeriesID        string
+	Condition       string // 'above' or 'below'
+	Threshold       float64
+	WebhookURL      string
+	IsActive        bool
+	LastTriggeredAt *time.Time
+	CreatedAt       time.Time
+}
+
+type AlertHistory struct {
+	ID            int64
+	AlertID       int64
+	SeriesID      string
+	Value         float64
+	Threshold     float64
+	TriggeredAt   time.Time
+	WebhookStatus string
+}
+
 type Store struct {
 	db *sql.DB
 }
@@ -169,6 +192,121 @@ VALUES (?, ?, ?, ?, ?, ?)
 	}
 
 	post.ID, _ = result.LastInsertId()
+	return nil
+}
+
+// CreateAlert creates a new alert
+func (s *Store) CreateAlert(alert *Alert) error {
+	result, err := s.db.Exec(`
+INSERT INTO alerts (user_email, name, series_id, condition, threshold, webhook_url, is_active)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+`, alert.UserEmail, alert.Name, alert.SeriesID, alert.Condition, alert.Threshold, alert.WebhookURL, alert.IsActive)
+
+	if err != nil {
+		return err
+	}
+
+	alert.ID, _ = result.LastInsertId()
+	return nil
+}
+
+// ListAlerts lists all alerts for a user
+func (s *Store) ListAlerts(userEmail string) ([]Alert, error) {
+	rows, err := s.db.Query(`
+SELECT id, user_email, name, series_id, condition, threshold, webhook_url, is_active, last_triggered_at, created_at
+FROM alerts
+WHERE user_email = ?
+ORDER BY created_at DESC
+`, userEmail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var a Alert
+		var lastTriggered sql.NullString
+
+		if err := rows.Scan(&a.ID, &a.UserEmail, &a.Name, &a.SeriesID, &a.Condition, &a.Threshold, &a.WebhookURL, &a.IsActive, &lastTriggered, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+
+		if lastTriggered.Valid {
+			t, _ := time.Parse(time.RFC3339, lastTriggered.String)
+			a.LastTriggeredAt = &t
+		}
+
+		alerts = append(alerts, a)
+	}
+
+	return alerts, nil
+}
+
+// GetActiveAlerts gets all active alerts
+func (s *Store) GetActiveAlerts() ([]Alert, error) {
+	rows, err := s.db.Query(`
+SELECT id, user_email, name, series_id, condition, threshold, webhook_url, is_active, last_triggered_at, created_at
+FROM alerts
+WHERE is_active = 1
+ORDER BY created_at DESC
+`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var alerts []Alert
+	for rows.Next() {
+		var a Alert
+		var lastTriggered sql.NullString
+
+		if err := rows.Scan(&a.ID, &a.UserEmail, &a.Name, &a.SeriesID, &a.Condition, &a.Threshold, &a.WebhookURL, &a.IsActive, &lastTriggered, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+
+		if lastTriggered.Valid {
+			t, _ := time.Parse(time.RFC3339, lastTriggered.String)
+			a.LastTriggeredAt = &t
+		}
+
+		alerts = append(alerts, a)
+	}
+
+	return alerts, nil
+}
+
+// DeleteAlert deletes an alert
+func (s *Store) DeleteAlert(id int64, userEmail string) error {
+	_, err := s.db.Exec(`
+DELETE FROM alerts
+WHERE id = ? AND user_email = ?
+`, id, userEmail)
+	return err
+}
+
+// UpdateAlertTriggered updates the last triggered time for an alert
+func (s *Store) UpdateAlertTriggered(id int64) error {
+	_, err := s.db.Exec(`
+UPDATE alerts
+SET last_triggered_at = datetime('now')
+WHERE id = ?
+`, id)
+	return err
+}
+
+// SaveAlertHistory saves an alert trigger to history
+func (s *Store) SaveAlertHistory(history *AlertHistory) error {
+	result, err := s.db.Exec(`
+INSERT INTO alert_history (alert_id, series_id, value, threshold, webhook_status)
+VALUES (?, ?, ?, ?, ?)
+`, history.AlertID, history.SeriesID, history.Value, history.Threshold, history.WebhookStatus)
+
+	if err != nil {
+		return err
+	}
+
+	history.ID, _ = result.LastInsertId()
 	return nil
 }
 

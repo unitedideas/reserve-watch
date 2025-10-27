@@ -50,6 +50,8 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
 	mux.HandleFunc("/api/indices", s.handleAPIIndices)
+	mux.HandleFunc("/api/alerts", s.handleAlertsAPI)
+	mux.HandleFunc("/api/alerts/", s.handleDeleteAlert)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))

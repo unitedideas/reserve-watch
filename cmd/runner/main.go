@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"reserve-watch/internal/alerts"
 	"reserve-watch/internal/compose"
 	"reserve-watch/internal/config"
 	"reserve-watch/internal/ingest"
@@ -317,6 +318,12 @@ func (app *App) RunDailyCheck() error {
 			ChartPath:  output.ChartPNG,
 			Status:     "draft",
 		})
+	}
+
+	// Check and trigger alerts
+	util.InfoLogger.Println("Checking alerts...")
+	if err := alerts.CheckAlerts(app.store); err != nil {
+		util.ErrorLogger.Printf("Failed to check alerts: %v", err)
 	}
 
 	return nil
