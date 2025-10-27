@@ -47,6 +47,10 @@ func main() {
 		store:     db,
 		fred:      ingest.NewFREDClient(cfg.FREDAPIKey),
 		yahoo:     ingest.NewYahooFinanceClient(),
+		imf:       ingest.NewIMFClient(),
+		swift:     ingest.NewSWIFTClient(),
+		cips:      ingest.NewCIPSClient(),
+		wgc:       ingest.NewWGCClient(),
 		composer:  compose.New("templates", "output"),
 		linkedin:  publish.NewLinkedInPublisher(cfg.LinkedInAccessToken, cfg.LinkedInOrgURN, cfg.DryRun),
 		mailchimp: publish.NewMailchimpPublisher(cfg.MailchimpAPIKey, cfg.MailchimpServer, cfg.MailchimpListID, cfg.DryRun),
@@ -95,6 +99,10 @@ type App struct {
 	store     *store.Store
 	fred      *ingest.FREDClient
 	yahoo     *ingest.YahooFinanceClient
+	imf       *ingest.IMFClient
+	swift     *ingest.SWIFTClient
+	cips      *ingest.CIPSClient
+	wgc       *ingest.WGCClient
 	composer  *compose.Composer
 	linkedin  *publish.LinkedInPublisher
 	mailchimp *publish.MailchimpPublisher
@@ -113,6 +121,67 @@ func (app *App) RunDailyCheck() error {
 		}
 	}
 
+	// Fetch IMF COFER data (CNY reserve share)
+	util.InfoLogger.Println("Fetching IMF COFER data...")
+	coferPoint, err := app.imf.FetchCOFER()
+	if err != nil {
+		util.ErrorLogger.Printf("IMF COFER fetch failed: %v", err)
+	} else {
+		util.InfoLogger.Printf("IMF COFER CNY: %.2f%%", coferPoint.Value)
+		if err := app.store.SavePoints("COFER_CNY", []store.SeriesPoint{coferPoint}, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save COFER data: %v", err)
+		}
+	}
+
+	// Fetch SWIFT RMB Tracker data
+	util.InfoLogger.Println("Fetching SWIFT RMB Tracker...")
+	swiftPoint, err := app.swift.FetchRMBTrackerData()
+	if err != nil {
+		util.ErrorLogger.Printf("SWIFT fetch failed: %v", err)
+	} else {
+		util.InfoLogger.Printf("SWIFT RMB: %.2f%% of global payments", swiftPoint.Value)
+		if err := app.store.SavePoints("SWIFT_RMB", []store.SeriesPoint{swiftPoint}, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save SWIFT data: %v", err)
+		}
+	}
+
+	// Fetch CIPS network stats
+	util.InfoLogger.Println("Fetching CIPS network stats...")
+	cipsPoints, err := app.cips.GetCIPSSeriesPoints()
+	if err != nil {
+		util.ErrorLogger.Printf("CIPS fetch failed: %v", err)
+	} else {
+		for _, point := range cipsPoints {
+			seriesID := point.Meta["series_id"]
+			util.InfoLogger.Printf("CIPS %s: %.2f", seriesID, point.Value)
+			if err := app.store.SavePoints(seriesID, []store.SeriesPoint{point}, time.Now()); err != nil {
+				util.ErrorLogger.Printf("Failed to save CIPS data: %v", err)
+			}
+		}
+	}
+
+	// Fetch World Gold Council data
+	util.InfoLogger.Println("Fetching World Gold Council data...")
+	wgcCBPurchases, err := app.wgc.FetchCentralBankPurchases()
+	if err != nil {
+		util.ErrorLogger.Printf("WGC CB purchases fetch failed: %v", err)
+	} else {
+		util.InfoLogger.Printf("WGC CB Purchases: %.0f tonnes", wgcCBPurchases.Value)
+		if err := app.store.SavePoints("WGC_CB_PURCHASES", []store.SeriesPoint{wgcCBPurchases}, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save WGC data: %v", err)
+		}
+	}
+
+	wgcGoldShare, err := app.wgc.FetchGoldReserveShare()
+	if err != nil {
+		util.ErrorLogger.Printf("WGC gold share fetch failed: %v", err)
+	} else {
+		util.InfoLogger.Printf("WGC Gold Reserve Share: %.1f%%", wgcGoldShare.Value)
+		if err := app.store.SavePoints("WGC_GOLD_RESERVE_SHARE", []store.SeriesPoint{wgcGoldShare}, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save WGC gold share: %v", err)
+		}
+	}
+
 	// Fetch official data from FRED
 	seriesID := "DTWEXBGS"
 	util.InfoLogger.Printf("Fetching FRED series: %s", seriesID)
@@ -122,7 +191,7 @@ func (app *App) RunDailyCheck() error {
 	}
 
 	if len(result.Points) == 0 {
-		util.InfoLogger.Println("No new data points")
+		util.InfoLogger.Println("No new FRED data points")
 		return nil
 	}
 
