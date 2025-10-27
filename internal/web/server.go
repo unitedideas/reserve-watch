@@ -419,9 +419,13 @@ const homeTemplate = `<!DOCTYPE html>
             
             {{if .HasOfficial}}
             <div class="stat-card">
-                <div class="stat-label">📊 Official FRED Data</div>
+                <div class="stat-label">📊 Nominal Broad U.S. Dollar Index</div>
                 <div class="stat-value">{{printf "%.2f" .OfficialValue}}</div>
-                <div class="stat-date">Federal Reserve • {{.OfficialDate}}</div>
+                <div class="stat-date">
+                    <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank" style="color: #667eea; text-decoration: none;">
+                        FRED DTWEXBGS
+                    </a> • Data: {{.OfficialDate}}
+                </div>
             </div>
             {{end}}
         </div>
