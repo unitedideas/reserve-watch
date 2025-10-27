@@ -82,7 +82,8 @@ func main() {
 
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, `{"status":"healthy","service":"reserve-watch"}`)
+			w.Header().Set("Content-Type", "application/json")
+			fmt.Fprintf(w, `{"status":"healthy","service":"reserve-watch","version":"1.0.0","timestamp":"%s"}`, time.Now().Format(time.RFC3339))
 		})
 
 		util.InfoLogger.Printf("Health check server listening on port %s", port)
