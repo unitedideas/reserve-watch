@@ -31,9 +31,9 @@ func (c *CIPSClient) FetchCIPSStats() (map[string]float64, error) {
 	// 1. Number of participants (direct + indirect)
 	// 2. Daily average transaction volume (RMB billions)
 	// 3. Annual total volume (RMB trillions)
-	
+
 	url := "https://www.cips.com.cn/en/index/index.html"
-	
+
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch CIPS data: %w", err)
@@ -50,7 +50,7 @@ func (c *CIPSClient) FetchCIPSStats() (map[string]float64, error) {
 	}
 
 	stats := make(map[string]float64)
-	
+
 	// Parse participants count
 	// Pattern: "XXX participants" or "XXX direct participants"
 	participantsPattern := regexp.MustCompile(`(\d+)\s+(?:direct\s+)?participants`)
@@ -79,9 +79,9 @@ func (c *CIPSClient) FetchCIPSStats() (map[string]float64, error) {
 	if len(stats) == 0 {
 		// 2024 data: 1,500+ participants, ~700B RMB daily avg, ~160T RMB annual
 		stats = map[string]float64{
-			"participants":            1528,
-			"daily_avg_billion_rmb":   697,
-			"annual_trillion_rmb":     160.5,
+			"participants":          1528,
+			"daily_avg_billion_rmb": 697,
+			"annual_trillion_rmb":   160.5,
 		}
 	}
 
@@ -181,4 +181,3 @@ func GetMockCIPSData() []store.SeriesPoint {
 		},
 	}
 }
-

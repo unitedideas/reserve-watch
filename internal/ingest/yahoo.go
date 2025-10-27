@@ -35,16 +35,16 @@ func NewYahooFinanceClient() *YahooFinanceClient {
 // FetchDXY fetches the real-time DXY (US Dollar Index) from Yahoo Finance
 func (c *YahooFinanceClient) FetchDXY() (store.SeriesPoint, error) {
 	url := "https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?interval=1d&range=1d"
-	
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return store.SeriesPoint{}, fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	// Add headers to avoid rate limiting
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 	req.Header.Set("Accept", "application/json")
-	
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return store.SeriesPoint{}, fmt.Errorf("failed to fetch Yahoo Finance data: %w", err)
@@ -75,9 +75,9 @@ func (c *YahooFinanceClient) FetchDXY() (store.SeriesPoint, error) {
 	return store.SeriesPoint{
 		Date:  timestamp.Format("2006-01-02"),
 		Value: result.Meta.RegularMarketPrice,
-		Meta:  map[string]string{
+		Meta: map[string]string{
 			"series_id": "DXY",
-			"source": "yahoo_finance",
+			"source":    "yahoo_finance",
 			"timestamp": timestamp.Format(time.RFC3339),
 		},
 	}, nil
@@ -95,4 +95,3 @@ func (c *YahooFinanceClient) getMockDXY() store.SeriesPoint {
 		},
 	}
 }
-

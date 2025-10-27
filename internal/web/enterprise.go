@@ -300,4 +300,3 @@ const enterpriseTemplate = `<!DOCTYPE html>
 </body>
 </html>
 `
-

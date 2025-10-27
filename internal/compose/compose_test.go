@@ -110,4 +110,3 @@ func TestComposeNoPoints(t *testing.T) {
 		t.Error("Expected error when composing with no points")
 	}
 }
-

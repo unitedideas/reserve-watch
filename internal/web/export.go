@@ -16,10 +16,10 @@ func (s *Server) handleExportCSV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusPaymentRequired)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error":   "Pro subscription required",
-		"message": "CSV exports are a Pro feature. Upgrade to download full historical data.",
+		"error":       "Pro subscription required",
+		"message":     "CSV exports are a Pro feature. Upgrade to download full historical data.",
 		"upgrade_url": "https://reserve.watch/pricing",
-		"price": "$74.99/month",
+		"price":       "$74.99/month",
 	})
 	return
 
@@ -76,10 +76,10 @@ func (s *Server) handleExportJSON(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusPaymentRequired)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error":   "Pro subscription required",
-		"message": "JSON exports are a Pro feature. Upgrade to download full historical data.",
+		"error":       "Pro subscription required",
+		"message":     "JSON exports are a Pro feature. Upgrade to download full historical data.",
 		"upgrade_url": "https://reserve.watch/pricing",
-		"price": "$74.99/month",
+		"price":       "$74.99/month",
 	})
 	return
 
@@ -133,14 +133,14 @@ func (s *Server) handleExportAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	seriesIDs := []string{
-		"DTWEXBGS",       // FRED USD Index
-		"DXY_REALTIME",   // Yahoo Finance DXY
-		"IMF_COFER",      // IMF COFER
-		"SWIFT_RMB",      // SWIFT RMB Tracker
-		"CIPS_NETWORK",   // CIPS Network
-		"WGC_GOLD",       // World Gold Council
-		"VIXCLS",         // VIX
-		"BAMLC0A4CBBB",   // BBB OAS
+		"DTWEXBGS",     // FRED USD Index
+		"DXY_REALTIME", // Yahoo Finance DXY
+		"IMF_COFER",    // IMF COFER
+		"SWIFT_RMB",    // SWIFT RMB Tracker
+		"CIPS_NETWORK", // CIPS Network
+		"WGC_GOLD",     // World Gold Council
+		"VIXCLS",       // VIX
+		"BAMLC0A4CBBB", // BBB OAS
 	}
 
 	allData := make(map[string]interface{})
@@ -188,10 +188,9 @@ func (s *Server) handleExportAll(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Disposition", "attachment; filename=\"reserve-watch-export.json\"")
 
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"exported_at": "now",
+			"exported_at":  "now",
 			"series_count": len(allData),
-			"data":        allData,
+			"data":         allData,
 		})
 	}
 }
-

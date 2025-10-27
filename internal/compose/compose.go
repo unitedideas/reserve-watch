@@ -208,4 +208,3 @@ func (c *Composer) generateOGImage(value float64, seriesName, date, outputPath s
 
 	return dc.SavePNG(outputPath)
 }
-

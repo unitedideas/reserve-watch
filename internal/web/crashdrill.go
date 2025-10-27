@@ -506,10 +506,10 @@ func (s *Server) handleCrashDrillPDF(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusPaymentRequired)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error":   "Pro subscription required",
-		"message": "PDF downloads are a Pro feature. Upgrade to download the full Crash-Drill checklist.",
+		"error":       "Pro subscription required",
+		"message":     "PDF downloads are a Pro feature. Upgrade to download the full Crash-Drill checklist.",
 		"upgrade_url": "https://reserve.watch/pricing",
-		"price": "$74.99/month",
+		"price":       "$74.99/month",
 	})
 	return
 

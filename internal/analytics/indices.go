@@ -10,35 +10,35 @@ import (
 // RMBPenetrationScore calculates the RMB Penetration Score (0-100)
 // Methodology: Normalize each component against USD/mature-currency baselines, then equal-weight average
 // - Payments: RMB SWIFT share / USD SWIFT share (~49.1%)
-// - Reserves: RMB COFER share / USD COFER share (~57.7%)  
+// - Reserves: RMB COFER share / USD COFER share (~57.7%)
 // - Network: CIPS participants / SWIFT total participants (~11,000)
 // Result: 0-100 score, where ~8-10 indicates current RMB penetration level
 func RMBPenetrationScore(swiftShareRMB, coferShareRMB, cipsParticipants float64) float64 {
 	// Baselines (as of 2024-2025)
-	const swiftShareUSD = 49.1    // USD payment share in SWIFT
-	const coferShareUSD = 57.7    // USD reserve share in IMF COFER
-	const swiftTotalParticipants = 11000.0  // SWIFT's global member base
-	
+	const swiftShareUSD = 49.1             // USD payment share in SWIFT
+	const coferShareUSD = 57.7             // USD reserve share in IMF COFER
+	const swiftTotalParticipants = 11000.0 // SWIFT's global member base
+
 	// Component 1: Payments (0-100 points)
 	// Normalize RMB payment share against USD payment share
 	paymentsComponent := (swiftShareRMB / swiftShareUSD) * 100.0
-	
+
 	// Component 2: Reserves (0-100 points)
 	// Normalize RMB reserve share against USD reserve share
 	reservesComponent := (coferShareRMB / coferShareUSD) * 100.0
-	
+
 	// Component 3: Network (0-100 points)
 	// Normalize CIPS participants against SWIFT total
 	networkComponent := (cipsParticipants / swiftTotalParticipants) * 100.0
-	
+
 	// Equal-weight average of three components
 	score := (paymentsComponent + reservesComponent + networkComponent) / 3.0
-	
+
 	// Cap at 100 (shouldn't happen with current data)
 	if score > 100 {
 		score = 100
 	}
-	
+
 	return math.Round(score*100) / 100 // Round to 2 decimals
 }
 
@@ -57,7 +57,7 @@ func ReserveDiversificationPressure(goldSharePercent, cbBuyingTonnes float64) fl
 	if goldComponent > 50 {
 		goldComponent = 50
 	}
-	
+
 	// Central bank buying component (0-50 points)
 	// 100 tonnes/quarter = baseline 20 points
 	// Each additional 100 tonnes adds 15 points
@@ -68,14 +68,14 @@ func ReserveDiversificationPressure(goldSharePercent, cbBuyingTonnes float64) fl
 	if buyingComponent > 50 {
 		buyingComponent = 50
 	}
-	
+
 	score := goldComponent + buyingComponent
-	
+
 	// Cap at 100
 	if score > 100 {
 		score = 100
 	}
-	
+
 	return math.Round(score*100) / 100 // Round to 2 decimals
 }
 
@@ -88,44 +88,44 @@ type ComponentDetail struct {
 
 // IndexResult holds calculated index values with metadata
 type IndexResult struct {
-	Name                string                      `json:"name"`
-	Value               float64                     `json:"value"`
-	Description         string                      `json:"description"`
-	Method              string                      `json:"method"`
-	Components          map[string]float64          `json:"components"`
-	ComponentsDetailed  map[string]ComponentDetail  `json:"components_detailed,omitempty"`
-	Timestamp           string                      `json:"timestamp"`
+	Name               string                     `json:"name"`
+	Value              float64                    `json:"value"`
+	Description        string                     `json:"description"`
+	Method             string                     `json:"method"`
+	Components         map[string]float64         `json:"components"`
+	ComponentsDetailed map[string]ComponentDetail `json:"components_detailed,omitempty"`
+	Timestamp          string                     `json:"timestamp"`
 }
 
 // CalculateAllIndices computes all proprietary indices from store data
 func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 	var results []IndexResult
-	
+
 	// Get latest data points for each series
 	swiftPoint, _ := db.GetLatestPoint("SWIFT_RMB")
 	coferPoint, _ := db.GetLatestPoint("COFER_CNY")
 	cipsPoint, _ := db.GetLatestPoint("CIPS_PARTICIPANTS")
 	goldSharePoint, _ := db.GetLatestPoint("WGC_GOLD_RESERVE_SHARE")
 	cbPurchasesPoint, _ := db.GetLatestPoint("WGC_CB_PURCHASES")
-	
+
 	// Calculate RMB Penetration Score
 	if swiftPoint != nil && coferPoint != nil && cipsPoint != nil {
 		// Baselines
 		const swiftShareUSD = 49.1
 		const coferShareUSD = 57.7
 		const swiftTotalParticipants = 11000.0
-		
+
 		// Calculate normalized components
 		paymentsNorm := (swiftPoint.Value / swiftShareUSD) * 100.0
 		reservesNorm := (coferPoint.Value / coferShareUSD) * 100.0
 		networkNorm := (cipsPoint.Value / swiftTotalParticipants) * 100.0
-		
+
 		score := RMBPenetrationScore(
 			swiftPoint.Value,
 			coferPoint.Value,
 			cipsPoint.Value,
 		)
-		
+
 		results = append(results, IndexResult{
 			Name:        "RMB Penetration Score",
 			Value:       score,
@@ -156,14 +156,14 @@ func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 			Timestamp: swiftPoint.Date,
 		})
 	}
-	
+
 	// Calculate Reserve Diversification Pressure
 	if goldSharePoint != nil && cbPurchasesPoint != nil {
 		pressure := ReserveDiversificationPressure(
 			goldSharePoint.Value,
 			cbPurchasesPoint.Value,
 		)
-		
+
 		results = append(results, IndexResult{
 			Name:        "Reserve Diversification Pressure",
 			Value:       pressure,
@@ -175,11 +175,11 @@ func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 			Timestamp: goldSharePoint.Date,
 		})
 	}
-	
+
 	if len(results) == 0 {
 		return nil, fmt.Errorf("insufficient data to calculate indices")
 	}
-	
+
 	return results, nil
 }
 
@@ -187,7 +187,7 @@ func CalculateAllIndices(db *store.Store) ([]IndexResult, error) {
 func GetIndexTrend(currentValue, previousValue float64) string {
 	change := currentValue - previousValue
 	changePercent := (change / previousValue) * 100
-	
+
 	if changePercent > 5 {
 		return "rising"
 	} else if changePercent < -5 {
@@ -195,4 +195,3 @@ func GetIndexTrend(currentValue, previousValue float64) string {
 	}
 	return "stable"
 }
-

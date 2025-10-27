@@ -34,9 +34,9 @@ func (c *WGCClient) FetchCentralBankPurchases() (store.SeriesPoint, error) {
 	// WGC API endpoint (if available) or scrape from their reports
 	// Real endpoint would be: https://www.gold.org/goldhub/data/...
 	// For MVP, we'll use mock data based on recent reports
-	
+
 	url := "https://www.gold.org/goldhub/data/gold-demand-statistics"
-	
+
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		// If API fails, use recent known data
@@ -126,4 +126,3 @@ func GetMockWGCData() []store.SeriesPoint {
 		},
 	}
 }
-

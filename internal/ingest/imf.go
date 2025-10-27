@@ -46,7 +46,7 @@ func (c *IMFClient) FetchCOFER() (store.SeriesPoint, error) {
 	// IMF COFER API endpoint for CNY allocated reserves
 	// Changed to HTTPS as HTTP is refused
 	url := "https://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/COFER/Q.CN.?startPeriod=2016&endPeriod=2025"
-	
+
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		// If API fails, return mock data as fallback
@@ -120,7 +120,7 @@ func (c *IMFClient) FetchAllCOFERCurrencies() ([]store.SeriesPoint, error) {
 
 	for _, curr := range currencies {
 		url := fmt.Sprintf("https://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/COFER/Q.%s.?startPeriod=2023&endPeriod=2025", curr)
-		
+
 		resp, err := c.httpClient.Get(url)
 		if err != nil {
 			continue // Skip on error, don't fail entire fetch
@@ -183,7 +183,7 @@ func (c *IMFClient) getMockCOFER() store.SeriesPoint {
 	now := time.Now()
 	quarter := (int(now.Month())-1)/3 + 1
 	dateStr := fmt.Sprintf("%d-Q%d", now.Year(), quarter)
-	
+
 	return store.SeriesPoint{
 		Date:  dateStr,
 		Value: 2.29, // Q3 2024 actual value
@@ -197,4 +197,3 @@ func (c *IMFClient) getMockCOFER() store.SeriesPoint {
 		},
 	}
 }
-

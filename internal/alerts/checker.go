@@ -96,14 +96,14 @@ func checkAlert(db *store.Store, alert *store.Alert) error {
 
 func sendWebhook(alert *store.Alert, value float64) string {
 	payload := map[string]interface{}{
-		"alert_id":   alert.ID,
-		"alert_name": alert.Name,
-		"series_id":  alert.SeriesID,
-		"condition":  alert.Condition,
-		"threshold":  alert.Threshold,
-		"value":      value,
+		"alert_id":     alert.ID,
+		"alert_name":   alert.Name,
+		"series_id":    alert.SeriesID,
+		"condition":    alert.Condition,
+		"threshold":    alert.Threshold,
+		"value":        value,
 		"triggered_at": time.Now().Format(time.RFC3339),
-		"message": "Alert triggered",
+		"message":      "Alert triggered",
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -128,4 +128,3 @@ func sendWebhook(alert *store.Alert, value float64) string {
 	util.ErrorLogger.Printf("Webhook failed with status: %d", resp.StatusCode)
 	return "failed"
 }
-

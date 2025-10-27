@@ -33,12 +33,12 @@ func (c *SWIFTClient) FetchRMBTrackerData() (store.SeriesPoint, error) {
 	// 2. Download the PDF
 	// 3. Parse the "RMB as % of global payments" figure
 	// 4. Extract the rank (e.g., "5th most used currency")
-	
+
 	// For MVP, we'll use a hardcoded recent value and add a scraper later
 	// Real implementation would use a PDF parsing library like pdftotext or Apache PDFBox
-	
+
 	url := "https://www.swift.com/swift-resource/248201/download"
-	
+
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
 		return store.SeriesPoint{}, fmt.Errorf("failed to fetch SWIFT RMB Tracker: %w", err)
@@ -59,7 +59,7 @@ func (c *SWIFTClient) FetchRMBTrackerData() (store.SeriesPoint, error) {
 	// Pattern: looking for "X.XX%" near "RMB" or "renminbi"
 	rmbPattern := regexp.MustCompile(`(?i)rmb.*?(\d+\.\d+)%|renminbi.*?(\d+\.\d+)%`)
 	matches := rmbPattern.FindStringSubmatch(string(body))
-	
+
 	var rmbShare float64
 	if len(matches) > 1 {
 		if matches[1] != "" {
@@ -98,7 +98,7 @@ func (c *SWIFTClient) FetchRMBRank() (int, error) {
 	// Similar to above, this would parse the PDF for statements like:
 	// "RMB ranks 5th as a global payment currency"
 	// "RMB moves up to 4th position"
-	
+
 	// For MVP, return recent known rank
 	// October 2024: RMB was 5th
 	return 5, nil
@@ -138,4 +138,3 @@ func GetMockRMBData() []store.SeriesPoint {
 		},
 	}
 }
-

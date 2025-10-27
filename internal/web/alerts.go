@@ -51,10 +51,10 @@ func (s *Server) handleCreateAlert(w http.ResponseWriter, r *http.Request) {
 	// Pro feature: return payment required for demo (in production, check actual subscription status)
 	w.WriteHeader(http.StatusPaymentRequired)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"error":   "Pro subscription required",
-		"message": "Alerts are a Pro feature. Upgrade to set custom threshold alerts with email/webhook delivery.",
+		"error":       "Pro subscription required",
+		"message":     "Alerts are a Pro feature. Upgrade to set custom threshold alerts with email/webhook delivery.",
 		"upgrade_url": "https://reserve.watch/pricing",
-		"price": "$74.99/month",
+		"price":       "$74.99/month",
 	})
 	return
 
@@ -155,4 +155,3 @@ func (s *Server) handleDeleteAlert(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]string{"message": "Alert deleted successfully"})
 }
-
