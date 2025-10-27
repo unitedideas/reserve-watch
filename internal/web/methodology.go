@@ -250,6 +250,62 @@ const methodologyTemplate = `<!DOCTYPE html>
             <p style="margin-top: 15px;"><em>Source code for index calculations available on GitHub.</em></p>
         </div>
 
+        <!-- Data Licensing & Terms -->
+        <div class="intro" style="margin-top: 40px;">
+            <h2 style="color: #667eea; margin-bottom: 20px;">📜 Data Licensing & Terms</h2>
+            <p style="margin-bottom: 20px;">Reserve Watch aggregates data from multiple public and commercial sources. All data is used in accordance with respective terms of service:</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">FRED (Federal Reserve Economic Data)</h3>
+                <p style="margin-bottom: 10px;">We use FRED API data for USD indices and economic indicators. FRED data is provided by the Federal Reserve Bank of St. Louis and is free for non-commercial and commercial use.</p>
+                <p><strong>Terms:</strong> <a href="https://fred.stlouisfed.org/legal/" target="_blank" style="color: #667eea;">https://fred.stlouisfed.org/legal/</a></p>
+                <p><strong>Attribution:</strong> Data sourced from Federal Reserve Economic Data (FRED), Federal Reserve Bank of St. Louis.</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">Yahoo Finance / ICE Data (DXY Real-Time)</h3>
+                <p style="margin-bottom: 10px;">Real-time DXY data is sourced from Yahoo Finance, which redistributes ICE (Intercontinental Exchange) data. This data is for informational purposes only.</p>
+                <p><strong>Terms:</strong> <a href="https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html" target="_blank" style="color: #667eea;">Yahoo Finance Terms</a></p>
+                <p><strong>Disclaimer:</strong> ICE data is provided "as is" and may be delayed. Not for redistribution or commercial use without proper licensing.</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">IMF COFER (Currency Composition of Official Foreign Exchange Reserves)</h3>
+                <p style="margin-bottom: 10px;">Reserve share data is sourced from IMF's COFER database via their public API.</p>
+                <p><strong>Terms:</strong> <a href="https://www.imf.org/external/terms.htm" target="_blank" style="color: #667eea;">IMF Terms of Use</a></p>
+                <p><strong>Attribution:</strong> International Monetary Fund, Currency Composition of Official Foreign Exchange Reserves (COFER).</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">SWIFT RMB Tracker</h3>
+                <p style="margin-bottom: 10px;">RMB payment share data is sourced from SWIFT's monthly RMB Tracker reports (publicly available PDFs).</p>
+                <p><strong>Source:</strong> <a href="https://www.swift.com/swift-resource/248201/download" target="_blank" style="color: #667eea;">SWIFT RMB Tracker</a></p>
+                <p><strong>Note:</strong> Data is manually extracted from public reports. SWIFT does not provide an official API.</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">CIPS (Cross-Border Interbank Payment System)</h3>
+                <p style="margin-bottom: 10px;">CIPS participant and volume data is scraped from publicly available information on the CIPS website.</p>
+                <p><strong>Source:</strong> <a href="https://www.cips.com.cn/en/index/index.html" target="_blank" style="color: #667eea;">CIPS Official Website</a></p>
+                <p><strong>Note:</strong> Data is scraped with respect to robots.txt and rate limits. No official API is provided.</p>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;">
+                <h3 style="color: #333; margin-bottom: 10px;">World Gold Council (WGC)</h3>
+                <p style="margin-bottom: 10px;">Central bank gold purchase data is sourced from World Gold Council's publicly available reports and data.</p>
+                <p><strong>Terms:</strong> <a href="https://www.gold.org/terms-and-conditions" target="_blank" style="color: #667eea;">WGC Terms & Conditions</a></p>
+                <p><strong>Attribution:</strong> Data sourced from World Gold Council. © World Gold Council. All rights reserved.</p>
+            </div>
+
+            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; margin: 30px 0; border-radius: 8px;">
+                <h3 style="color: #856404; margin-bottom: 10px;">⚠️ Important Disclaimers</h3>
+                <p style="color: #856404; margin-bottom: 10px;"><strong>Not Investment Advice:</strong> All data, indices, and analysis on Reserve Watch are for informational purposes only. Do not constitute financial, investment, or trading advice.</p>
+                <p style="color: #856404; margin-bottom: 10px;"><strong>Data Accuracy:</strong> While we strive for accuracy, we cannot guarantee the completeness or timeliness of third-party data. Users should verify critical data independently.</p>
+                <p style="color: #856404; margin-bottom: 10px;"><strong>Commercial Use:</strong> Pro and Team tiers grant you access to enhanced features and analysis, but do not grant redistribution rights to underlying data. Comply with each source's terms of use.</p>
+                <p style="color: #856404;"><strong>Contact:</strong> For licensing inquiries or data removal requests, contact <a href="mailto:legal@reservewatch.com" style="color: #667eea;">legal@reservewatch.com</a></p>
+            </div>
+        </div>
+
         <div style="text-align: center;">
             <a href="/" class="back-link">← Back to Dashboard</a>
         </div>
