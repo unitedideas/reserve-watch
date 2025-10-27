@@ -43,10 +43,12 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/trigger-watch", s.handleTriggerWatch)
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
 	mux.HandleFunc("/crash-drill/download-pdf", s.handleCrashDrillPDF)
-	mux.HandleFunc("/pricing", s.handlePricing)
-	mux.HandleFunc("/success", s.handleSuccess)
-	mux.HandleFunc("/api/docs", s.handleAPIDocs)
-	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
+    mux.HandleFunc("/pricing", s.handlePricing)
+    mux.HandleFunc("/success", s.handleSuccess)
+    mux.HandleFunc("/api/docs", s.handleAPIDocs)
+    mux.HandleFunc("/api/leads", s.handleLeads)
+    mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
+    mux.HandleFunc("/api/leads", s.handleLeads)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
@@ -57,16 +59,43 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/export/json", s.handleExportJSON)
 	mux.HandleFunc("/api/export/all", s.handleExportAll)
 	mux.HandleFunc("/api/signals/latest", s.handleAPISignals)
+	mux.HandleFunc("/api/leads", s.handleLeads)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
+}
+// handleLeads collects user emails for weekly snapshot (simple JSON body {"email":"..."})
+func (s *Server) handleLeads(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodOptions {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+    if r.Method != http.MethodPost {
+        http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+        return
+    }
+
+    type payload struct {
+        Email string `json:"email"`
+    }
+    var p payload
+    if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
+        http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
+        return
+    }
+
+    // For now, just log and acknowledge. Future: persist to DB/leads table.
+    util.InfoLogger.Printf("Lead captured: %s", p.Email)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 // CORS middleware to allow API access
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if r.Method == "OPTIONS" {
@@ -100,6 +129,13 @@ type DataSourceCard struct {
 	IngestedAt    string // When we fetched it
 	Delta         string // Change vs 10 days ago (e.g., "+2.5%")
 	SparklineData string // JSON array of last 30 days for mini chart
+}
+
+// ThreatItem represents a condensed risk callout for the Threat Bar
+type ThreatItem struct {
+    Text   string
+    Status string
+    Link   string
 }
 
 // Home page with dashboard
@@ -139,9 +175,43 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		diversificationPressure = "N/A"
 	}
 
-	tmpl := template.Must(template.New("home").Parse(homeTemplate))
+    // Build Threat Bar items from latest signals (watch/crisis only)
+    var threats []ThreatItem
+    if sigs, _ := analytics.GetAllSignals(s.store); len(sigs) > 0 {
+        order := []string{"dtwexbgs", "swift_rmb", "cofer_cny", "vix", "bbb_oas", "cips_participants"}
+        labels := map[string]string{
+            "dtwexbgs":           "USD",
+            "swift_rmb":          "SWIFT RMB",
+            "cofer_cny":          "COFER CNY",
+            "cips_participants":  "CIPS",
+            "wgc_cb_purchases":   "CB Gold",
+            "vix":                 "VIX",
+            "bbb_oas":             "BBB OAS",
+        }
+        for _, key := range order {
+            if sig, ok := sigs[key]; ok {
+                st := string(sig.Status)
+                if st == "watch" || st == "crisis" {
+                    text := labels[key]
+                    if sig.Why != "" {
+                        text = text + ": " + sig.Why
+                    }
+                    threats = append(threats, ThreatItem{
+                        Text:   text,
+                        Status: st,
+                        Link:   analytics.GetActionURL(sig.Action),
+                    })
+                }
+            }
+            if len(threats) >= 3 {
+                break
+            }
+        }
+    }
 
-	data := struct {
+    tmpl := template.Must(template.New("home").Parse(homeTemplate))
+
+    data := struct {
 		Cards                   []DataSourceCard
 		DataPointsJSON          template.JS
 		HasData                 bool
@@ -149,7 +219,8 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		DiversificationPressure string
 		RMBScoreValue           float64
 		DiversificationValue    float64
-	}{
+        Threats                 []ThreatItem
+    }{
 		Cards:                   cards,
 		DataPointsJSON:          dataPointsJSON,
 		HasData:                 len(cards) > 0,
@@ -157,6 +228,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		DiversificationPressure: diversificationPressure,
 		RMBScoreValue:           rmbScoreValue,
 		DiversificationValue:    diversificationValue,
+        Threats:                 threats,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -636,8 +708,8 @@ const homeTemplate = `<!DOCTYPE html>
 <body>
     <div class="container">
         <header>
-            <h1>💰 Reserve Watch</h1>
-            <p class="tagline">Real-Time De-Dollarization Tracking & Analysis</p>
+            <h1>💰 The dollar order is fracturing. Are you exposed?</h1>
+            <p class="tagline">When USD tightens and settlement shifts, margins, liquidity, and safety move fast.</p>
             <div style="margin-top: 20px;">
                 <span class="badge">🟢 LIVE</span>
                 <span class="badge">✅ Updated Daily</span>
@@ -660,6 +732,22 @@ const homeTemplate = `<!DOCTYPE html>
             <a href="/pricing" class="nav-link">Pricing</a>
             <a href="/api/docs" class="nav-link">API</a>
         </nav>
+
+        <!-- Threat Bar: show top 2-3 risks with actions -->
+        {{if .Threats}}
+        <div class="main-content" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);">
+            <div style="font-weight:700; color:#ffd166;">This week’s risks:</div>
+            {{range .Threats}}
+            <div style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.2); padding:8px 12px; border-radius:999px;">
+                <span class="status-badge {{if eq .Status "watch"}}status-watch{{else}}status-crisis{{end}}" style="margin:0; padding:2px 8px;">{{.Status}}</span>
+                <span style="font-size:0.9em; color:#ddd;">{{.Text}}</span>
+                {{if .Link}}
+                <a href="{{.Link}}" style="color:#fff; background:#667eea; padding:4px 10px; border-radius:999px; text-decoration:none; font-size:0.8em;">Do this now →</a>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+        {{end}}
 
         {{if .HasData}}
         <div class="hero-stats">
