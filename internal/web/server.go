@@ -275,7 +275,15 @@ const homeTemplate = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reserve Watch - De-Dollarization Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Preconnect to external origins for faster loading -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    
+    <!-- Defer non-critical Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    
+    <!-- Critical CSS inlined above the fold -->
     <style>
         * {
             margin: 0;
@@ -388,6 +396,8 @@ const homeTemplate = `<!DOCTYPE html>
             transition: all 0.3s ease;
             position: relative;
             border: 1px solid rgba(0,0,0,0.05);
+            content-visibility: auto;
+            contain-intrinsic-size: 0 400px;
         }
         
         .stat-card:hover {
@@ -657,7 +667,7 @@ const homeTemplate = `<!DOCTYPE html>
                 </div>
                 
                 {{if .SparklineData}}
-                <canvas class="sparkline" data-values="{{.SparklineData}}" style="width: 100%; height: 40px; margin: 12px 0;"></canvas>
+                <canvas class="sparkline" data-values="{{.SparklineData}}" width="320" height="40" style="width: 100%; height: 40px; margin: 12px 0;" loading="lazy"></canvas>
                 {{end}}
                 
                 {{if .Status}}
@@ -880,12 +890,29 @@ const homeTemplate = `<!DOCTYPE html>
     {{end}}
     
     <script>
-        // Render sparklines for each card
+        // Lazy-load sparklines with Intersection Observer for better performance
         document.addEventListener('DOMContentLoaded', function() {
-            const sparklines = document.querySelectorAll('.sparkline');
-            sparklines.forEach(canvas => {
+            // Only render sparklines when they come into view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.dataset.rendered) {
+                        renderSparkline(entry.target);
+                        entry.target.dataset.rendered = 'true';
+                    }
+                });
+            }, {
+                rootMargin: '50px', // Start loading 50px before they're visible
+                threshold: 0.1
+            });
+            
+            // Observe all sparkline canvases
+            document.querySelectorAll('.sparkline').forEach(canvas => {
+                observer.observe(canvas);
+            });
+            
+            function renderSparkline(canvas) {
                 const values = JSON.parse(canvas.dataset.values || '[]');
-                if (values.length === 0) return;
+                if (values.length === 0 || typeof Chart === 'undefined') return;
                 
                 const ctx = canvas.getContext('2d');
                 new Chart(ctx, {
@@ -911,10 +938,13 @@ const homeTemplate = `<!DOCTYPE html>
                         scales: {
                             x: { display: false },
                             y: { display: false }
+                        },
+                        animation: {
+                            duration: 750 // Smooth animation when entering viewport
                         }
                     }
                 });
-            });
+            }
         });
     </script>
 </body>
