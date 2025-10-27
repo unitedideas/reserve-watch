@@ -27,8 +27,8 @@ const pricingTemplate = `<!DOCTYPE html>
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
+            color: #e0e0e0;
             padding: 40px 20px;
         }
         .container {
@@ -54,11 +54,12 @@ const pricingTemplate = `<!DOCTYPE html>
             margin-bottom: 40px;
         }
         .pricing-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .pricing-card:hover {
             transform: translateY(-5px);

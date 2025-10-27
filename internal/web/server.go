@@ -324,8 +324,8 @@ const homeTemplate = `<!DOCTYPE html>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e0e0e0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 100%);
             min-height: 100vh;
         }
         
@@ -391,11 +391,12 @@ const homeTemplate = `<!DOCTYPE html>
         }
         
         .main-content {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             padding: 40px;
             margin: 20px 0;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .chart-container {
@@ -429,10 +430,11 @@ const homeTemplate = `<!DOCTYPE html>
         .cta-section {
             text-align: center;
             padding: 50px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%);
             border-radius: 20px;
             color: white;
             margin: 40px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .cta-section h2 {
@@ -540,7 +542,7 @@ const homeTemplate = `<!DOCTYPE html>
         </div>
 
         <!-- Proprietary Indices Section -->
-        <div class="main-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
+        <div class="main-content" style="background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); color: white; margin-top: 40px; border: 1px solid rgba(255, 255, 255, 0.2);">
             <h2 style="text-align: center; margin-bottom: 30px;">🎯 Proprietary De-Dollarization Indices</h2>
             <div class="features">
                 <div class="feature" style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 15px;">
