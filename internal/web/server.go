@@ -62,12 +62,17 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 
 // DataSourceCard represents a data source card on the dashboard
 type DataSourceCard struct {
-	Label   string
-	Value   string
-	Source  string
-	Date    string
-	Link    string
-	HasData bool
+	Label       string
+	Value       string
+	Source      string
+	Date        string
+	Link        string
+	HasData     bool
+	SoWhat      string
+	DoThisNow   string
+	AlertName   string
+	AlertSignal string
+	ChecklistID string
 }
 
 // Home page with dashboard
@@ -77,24 +82,34 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// 1. Real-time DXY from Yahoo Finance
 	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🟢 Live Market Price (DXY) - Indicative",
-			Value:   fmt.Sprintf("%.2f", realtimeData.Value),
-			Source:  "Yahoo Finance (Demo)",
-			Date:    realtimeData.Date,
-			Link:    "https://finance.yahoo.com/quote/DX-Y.NYB",
-			HasData: true,
+			Label:       "🟢 Live Market Price (DXY) - Indicative",
+			Value:       fmt.Sprintf("%.2f", realtimeData.Value),
+			Source:      "Yahoo Finance (Demo)",
+			Date:        realtimeData.Date,
+			Link:        "https://finance.yahoo.com/quote/DX-Y.NYB",
+			HasData:     true,
+			SoWhat:      "Market-driven USD strength/weakness affects export pricing, import costs, and overseas USD debt burden in real-time.",
+			DoThisNow:   "Set alert: USD +2% in 10 days → Review FX exposures, consider forward hedges, adjust invoicing currency.",
+			AlertName:   "USD Rally Alert",
+			AlertSignal: "dxy_change_10d",
+			ChecklistID: "pricing-hedge-review",
 		})
 	}
 
 	// 2. Official FRED USD Index
 	if fredData, _ := s.store.GetLatestPoint("DTWEXBGS"); fredData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "📊 Nominal Broad U.S. Dollar Index",
-			Value:   fmt.Sprintf("%.2f", fredData.Value),
-			Source:  "FRED DTWEXBGS",
-			Date:    fredData.Date,
-			Link:    "https://fred.stlouisfed.org/series/DTWEXBGS",
-			HasData: true,
+			Label:       "📊 Nominal Broad U.S. Dollar Index",
+			Value:       fmt.Sprintf("%.2f", fredData.Value),
+			Source:      "FRED DTWEXBGS",
+			Date:        fredData.Date,
+			Link:        "https://fred.stlouisfed.org/series/DTWEXBGS",
+			HasData:     true,
+			SoWhat:      "Stronger USD tightens financial conditions abroad and moves import/export pricing. This is the broad trade-weighted dollar (not just DXY).",
+			DoThisNow:   "Set alert: USD +2% in 10 trading days → Open Pricing & Hedge Review checklist (review FX exposures, forward hedges, invoicing currency).",
+			AlertName:   "USD Strength Alert",
+			AlertSignal: "dtwexbgs_change_10d",
+			ChecklistID: "pricing-hedge-review",
 		})
 	}
 
