@@ -43,7 +43,7 @@ const pricingTemplate = `<!DOCTYPE html>
         }
         .subtitle {
             text-align: center;
-            color: rgba(255,255,255,0.9);
+            color: white;
             font-size: 1.2em;
             margin-bottom: 60px;
         }
@@ -141,7 +141,7 @@ const pricingTemplate = `<!DOCTYPE html>
         }
         .footer {
             text-align: center;
-            color: rgba(255,255,255,0.8);
+            color: white;
             margin-top: 60px;
         }
         .footer a {
@@ -218,4 +218,3 @@ const pricingTemplate = `<!DOCTYPE html>
 </body>
 </html>
 `
-

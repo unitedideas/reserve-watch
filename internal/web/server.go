@@ -543,26 +543,26 @@ const homeTemplate = `<!DOCTYPE html>
         <div class="main-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-top: 40px;">
             <h2 style="text-align: center; margin-bottom: 30px;">🎯 Proprietary De-Dollarization Indices</h2>
             <div class="features">
-                <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
+                <div class="feature" style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 15px;">
                     <div class="feature-icon">🌍</div>
                     <h3>RMB Penetration Score</h3>
                     <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">{{.RMBScore}}</p>
-                    <p style="opacity: 0.9;">Combines SWIFT payment share × COFER reserves × CIPS reach</p>
+                    <p>Combines SWIFT payment share × COFER reserves × CIPS reach</p>
                     {{if gt .RMBScoreValue 0.0}}
-                    <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.7;">Score: 0-100 scale • Higher = greater RMB penetration</p>
+                    <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.95;">Score: 0-100 scale • Higher = greater RMB penetration</p>
                     {{end}}
                 </div>
-                <div class="feature" style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px;">
+                <div class="feature" style="background: rgba(255,255,255,0.15); padding: 30px; border-radius: 15px;">
                     <div class="feature-icon">⚠️</div>
                     <h3>Reserve Diversification Pressure</h3>
                     <p style="font-size: 2em; font-weight: bold; margin: 15px 0;">{{.DiversificationPressure}}</p>
-                    <p style="opacity: 0.9;">Measures gold reserve trends + central bank buying</p>
+                    <p>Measures gold reserve trends + central bank buying</p>
                     {{if gt .DiversificationValue 0.0}}
-                    <p style="font-size: 0.8em; margin-top: 10px; opacity: 0.7;">Pressure: 0-100 scale • Higher = more pressure to diversify from USD</p>
+                    <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.95;">Pressure: 0-100 scale • Higher = more pressure to diversify from USD</p>
                     {{end}}
                 </div>
             </div>
-            <p style="text-align: center; margin-top: 30px; opacity: 0.8; font-size: 0.9em;">
+            <p style="text-align: center; margin-top: 30px; font-size: 0.9em;">
                 Sources: IMF COFER • SWIFT RMB Tracker • CIPS • World Gold Council • Federal Reserve
             </p>
         </div>
@@ -593,7 +593,7 @@ const homeTemplate = `<!DOCTYPE html>
                 <input type="email" placeholder="Enter your email" required>
                 <button type="submit">Get Free Updates</button>
             </form>
-            <p style="opacity: 0.8; font-size: 0.9em;">
+            <p style="color: #666; font-size: 0.9em;">
                 Free daily newsletter • Unsubscribe anytime • No spam
             </p>
         </div>
