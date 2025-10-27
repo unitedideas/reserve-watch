@@ -46,6 +46,7 @@ func main() {
 		cfg:       cfg,
 		store:     db,
 		fred:      ingest.NewFREDClient(cfg.FREDAPIKey),
+		yahoo:     ingest.NewYahooFinanceClient(),
 		composer:  compose.New("templates", "output"),
 		linkedin:  publish.NewLinkedInPublisher(cfg.LinkedInAccessToken, cfg.LinkedInOrgURN, cfg.DryRun),
 		mailchimp: publish.NewMailchimpPublisher(cfg.MailchimpAPIKey, cfg.MailchimpServer, cfg.MailchimpListID, cfg.DryRun),
@@ -93,14 +94,27 @@ type App struct {
 	cfg       *config.Config
 	store     *store.Store
 	fred      *ingest.FREDClient
+	yahoo     *ingest.YahooFinanceClient
 	composer  *compose.Composer
 	linkedin  *publish.LinkedInPublisher
 	mailchimp *publish.MailchimpPublisher
 }
 
 func (app *App) RunDailyCheck() error {
-	seriesID := "DTWEXBGS"
+	// Fetch real-time data from Yahoo Finance
+	util.InfoLogger.Println("Fetching real-time DXY from Yahoo Finance...")
+	yahooPoint, err := app.yahoo.FetchDXY()
+	if err != nil {
+		util.ErrorLogger.Printf("Yahoo Finance fetch failed: %v", err)
+	} else {
+		util.InfoLogger.Printf("Yahoo DXY: %.4f (date: %s)", yahooPoint.Value, yahooPoint.Date)
+		if err := app.store.SavePoints("DXY_REALTIME", []store.SeriesPoint{yahooPoint}, time.Now()); err != nil {
+			util.ErrorLogger.Printf("Failed to save Yahoo data: %v", err)
+		}
+	}
 
+	// Fetch official data from FRED
+	seriesID := "DTWEXBGS"
 	util.InfoLogger.Printf("Fetching FRED series: %s", seriesID)
 	result := app.fred.FetchSeries(seriesID)
 	if result.Err != nil {

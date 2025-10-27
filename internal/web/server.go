@@ -42,28 +42,42 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		
+
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
 
 // Home page with dashboard
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
-	// Get latest data
-	latest, err := s.store.GetLatestPoint("DTWEXBGS")
+	// Get real-time data from Yahoo Finance
+	realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME")
 	
-	var latestValue float64
-	var latestDate string
+	// Get official FRED data
+	fredData, err := s.store.GetLatestPoint("DTWEXBGS")
+	
+	var realtimeValue float64
+	var realtimeDate string
+	var officialValue float64
+	var officialDate string
 	var dataPoints []store.SeriesPoint
+	var hasRealtime bool
+	var hasOfficial bool
 	
-	if err == nil && latest != nil {
-		latestValue = latest.Value
-		latestDate = latest.Date
+	if realtimeData != nil {
+		realtimeValue = realtimeData.Value
+		realtimeDate = realtimeData.Date
+		hasRealtime = true
+	}
+	
+	if err == nil && fredData != nil {
+		officialValue = fredData.Value
+		officialDate = fredData.Date
+		hasOfficial = true
 		
 		// Get last 30 days for chart
 		dataPoints, _ = s.store.GetRecentPoints("DTWEXBGS", 30)
@@ -71,21 +85,27 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 
 	// Convert data points to JSON for JavaScript
 	dataPointsJSON, _ := json.Marshal(dataPoints)
-	
+
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 	
 	data := struct {
-		LatestValue    float64
-		LatestDate     string
-		HasData        bool
+		RealtimeValue  float64
+		RealtimeDate   string
+		OfficialValue  float64
+		OfficialDate   string
+		HasRealtime    bool
+		HasOfficial    bool
 		DataPointsJSON template.JS
 	}{
-		LatestValue:    latestValue,
-		LatestDate:     latestDate,
-		HasData:        latest != nil,
+		RealtimeValue:  realtimeValue,
+		RealtimeDate:   realtimeDate,
+		OfficialValue:  officialValue,
+		OfficialDate:   officialDate,
+		HasRealtime:    hasRealtime,
+		HasOfficial:    hasOfficial,
 		DataPointsJSON: template.JS(dataPointsJSON),
 	}
-	
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := tmpl.Execute(w, data); err != nil {
 		util.ErrorLogger.Printf("Template execution error: %v", err)
@@ -97,14 +117,14 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	
+
 	response := map[string]interface{}{
 		"status":    "healthy",
 		"service":   "reserve-watch",
 		"version":   "1.0.0",
 		"timestamp": time.Now().Format(time.RFC3339),
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -115,7 +135,7 @@ func (s *Server) handleAPILatest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"No data available"}`, http.StatusNotFound)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"series":    "DTWEXBGS",
@@ -134,13 +154,13 @@ func (s *Server) handleAPIHistory(w http.ResponseWriter, r *http.Request) {
 	if limitStr != "" {
 		fmt.Sscanf(limitStr, "%d", &limit)
 	}
-	
+
 	points, err := s.store.GetRecentPoints("DTWEXBGS", limit)
 	if err != nil {
 		http.Error(w, `{"error":"Failed to fetch data"}`, http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"series": "DTWEXBGS",
@@ -367,13 +387,23 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
         </header>
 
-        {{if .HasData}}
+        {{if or .HasRealtime .HasOfficial}}
         <div class="hero-stats">
+            {{if .HasRealtime}}
             <div class="stat-card">
-                <div class="stat-label">US Dollar Index (DXY)</div>
-                <div class="stat-value">{{printf "%.2f" .LatestValue}}</div>
-                <div class="stat-date">as of {{.LatestDate}}</div>
+                <div class="stat-label">🔴 LIVE Market Price</div>
+                <div class="stat-value" style="color: #4CAF50;">{{printf "%.2f" .RealtimeValue}}</div>
+                <div class="stat-date">Yahoo Finance • {{.RealtimeDate}}</div>
             </div>
+            {{end}}
+            
+            {{if .HasOfficial}}
+            <div class="stat-card">
+                <div class="stat-label">📊 Official FRED Data</div>
+                <div class="stat-value">{{printf "%.2f" .OfficialValue}}</div>
+                <div class="stat-date">Federal Reserve • {{.OfficialDate}}</div>
+            </div>
+            {{end}}
         </div>
 
         <div class="main-content">
@@ -408,9 +438,10 @@ const homeTemplate = `<!DOCTYPE html>
         {{else}}
         <div class="main-content">
             <div class="no-data">
-                <h2>⏳ Collecting Data...</h2>
-                <p>The system will fetch the first data point at the next scheduled run (9:00 AM daily).</p>
-                <p style="margin-top: 20px;">Check back soon!</p>
+                <h2>⏳ Initializing Data Sources...</h2>
+                <p>Connecting to Yahoo Finance (real-time) and FRED (official data)...</p>
+                <p style="margin-top: 20px;">First data fetch happens at next scheduled run (9:00 AM daily).</p>
+                <p>Or refresh this page in a few minutes!</p>
             </div>
         </div>
         {{end}}
@@ -456,7 +487,7 @@ const homeTemplate = `<!DOCTYPE html>
         </footer>
     </div>
 
-    {{if .HasData}}
+    {{if .HasOfficial}}
     <script>
         // Prepare chart data
         const chartData = {{.DataPointsJSON}};
@@ -513,4 +544,3 @@ const homeTemplate = `<!DOCTYPE html>
     {{end}}
 </body>
 </html>`
-
