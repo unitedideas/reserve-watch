@@ -33,6 +33,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/methodology", s.handleMethodology)
 	mux.HandleFunc("/trigger-watch", s.handleTriggerWatch)
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
+	mux.HandleFunc("/pricing", s.handlePricing)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
