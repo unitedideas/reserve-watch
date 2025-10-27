@@ -20,6 +20,9 @@ type Config struct {
 	MailchimpServer     string
 	MailchimpListID     string
 
+	StripeSecretKey      string
+	StripePublishableKey string
+
 	PublishLinkedIn  bool
 	PublishMailchimp bool
 	AutoPublish      bool
@@ -40,6 +43,9 @@ func Load() (*Config, error) {
 		MailchimpAPIKey:     getEnv("MAILCHIMP_API_KEY", ""),
 		MailchimpServer:     getEnv("MAILCHIMP_SERVER_PREFIX", ""),
 		MailchimpListID:     getEnv("MAILCHIMP_LIST_ID", ""),
+
+		StripeSecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
+		StripePublishableKey: getEnv("STRIPE_PUBLISHABLE_KEY", ""),
 
 		PublishLinkedIn:  getEnvBool("PUBLISH_LINKEDIN", false),
 		PublishMailchimp: getEnvBool("PUBLISH_MAILCHIMP", false),
