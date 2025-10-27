@@ -228,7 +228,7 @@ const pricingTemplate = `<!DOCTYPE html>
                     <li>📈 Trend analysis & forecasts</li>
                     <li>Priority API (1,000 req/day)</li>
                 </ul>
-                <a href="mailto:contact@reservewatch.com?subject=Pro%20Plan%20Signup" class="cta-button">Start Pro Trial</a>
+                <button onclick="checkout('price_pro', 'Pro')" class="cta-button" id="pro-btn">Start Pro Plan - $9/mo</button>
             </div>
 
             <!-- Team Tier -->
@@ -246,7 +246,7 @@ const pricingTemplate = `<!DOCTYPE html>
                     <li>🔌 Unlimited API access</li>
                     <li>📊 Advanced analytics & backtesting</li>
                 </ul>
-                <a href="mailto:contact@reservewatch.com?subject=Team%20Plan%20Inquiry" class="cta-button">Contact Sales</a>
+                <button onclick="checkout('price_team', 'Team')" class="cta-button" id="team-btn">Contact Sales for Team</button>
             </div>
         </div>
 
@@ -255,6 +255,35 @@ const pricingTemplate = `<!DOCTYPE html>
             <p style="margin-top: 20px;"><a href="/">← Back to Dashboard</a></p>
         </div>
     </div>
+
+    <script>
+        async function checkout(priceId, plan) {
+            const btn = plan === 'Pro' ? document.getElementById('pro-btn') : document.getElementById('team-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/stripe/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price_id: priceId, plan: plan })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Checkout failed');
+                }
+
+                const data = await response.json();
+                window.location.href = data.url;
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Failed to start checkout. Please try again or contact support.');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
 `

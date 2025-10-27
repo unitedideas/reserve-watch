@@ -7,20 +7,28 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/stripe/stripe-go/v76"
 	"reserve-watch/internal/analytics"
 	"reserve-watch/internal/store"
 	"reserve-watch/internal/util"
 )
 
 type Server struct {
-	store *store.Store
-	port  string
+	store     *store.Store
+	port      string
+	stripeKey string
 }
 
-func NewServer(store *store.Store, port string) *Server {
+func NewServer(store *store.Store, port string, stripeKey string) *Server {
+	// Initialize Stripe
+	if stripeKey != "" {
+		stripe.Key = stripeKey
+	}
+	
 	return &Server{
-		store: store,
-		port:  port,
+		store:     store,
+		port:      port,
+		stripeKey: stripeKey,
 	}
 }
 
@@ -35,6 +43,8 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/crash-drill", s.handleCrashDrill)
 	mux.HandleFunc("/crash-drill/download-pdf", s.handleCrashDrillPDF)
 	mux.HandleFunc("/pricing", s.handlePricing)
+	mux.HandleFunc("/success", s.handleSuccess)
+	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
