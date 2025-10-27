@@ -1,7 +1,6 @@
 package ingest
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
