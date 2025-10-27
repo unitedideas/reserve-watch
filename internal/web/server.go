@@ -29,6 +29,7 @@ func (s *Server) Start() error {
 	// Routes
 	mux.HandleFunc("/", s.handleHome)
 	mux.HandleFunc("/health", s.handleHealth)
+	mux.HandleFunc("/methodology", s.handleMethodology)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
