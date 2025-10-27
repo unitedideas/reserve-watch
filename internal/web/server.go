@@ -77,7 +77,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	// 1. Real-time DXY from Yahoo Finance
 	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
 		cards = append(cards, DataSourceCard{
-			Label:   "🔴 Live Market Price (DXY) - Indicative",
+			Label:   "🟢 Live Market Price (DXY) - Indicative",
 			Value:   fmt.Sprintf("%.2f", realtimeData.Value),
 			Source:  "Yahoo Finance (Demo)",
 			Date:    realtimeData.Date,
@@ -519,7 +519,7 @@ const homeTemplate = `<!DOCTYPE html>
             <h1>💰 Reserve Watch</h1>
             <p class="tagline">Real-Time De-Dollarization Tracking & Analysis</p>
             <div style="margin-top: 20px;">
-                <span class="badge">🔴 LIVE</span>
+                <span class="badge">🟢 LIVE</span>
                 <span class="badge">✅ Updated Daily</span>
             </div>
         </header>
