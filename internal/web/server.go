@@ -53,58 +53,109 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// DataSourceCard represents a data source card on the dashboard
+type DataSourceCard struct {
+	Label  string
+	Value  string
+	Source string
+	Date   string
+	Link   string
+	HasData bool
+}
+
 // Home page with dashboard
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
-	// Get real-time data from Yahoo Finance
-	realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME")
+	var cards []DataSourceCard
 	
-	// Get official FRED data
-	fredData, err := s.store.GetLatestPoint("DTWEXBGS")
-	
-	var realtimeValue float64
-	var realtimeDate string
-	var officialValue float64
-	var officialDate string
-	var dataPoints []store.SeriesPoint
-	var hasRealtime bool
-	var hasOfficial bool
-	
-	if realtimeData != nil {
-		realtimeValue = realtimeData.Value
-		realtimeDate = realtimeData.Date
-		hasRealtime = true
+	// 1. Real-time DXY from Yahoo Finance
+	if realtimeData, _ := s.store.GetLatestPoint("DXY_REALTIME"); realtimeData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "🔴 Live Market Price (DXY)",
+			Value:   fmt.Sprintf("%.2f", realtimeData.Value),
+			Source:  "Yahoo Finance",
+			Date:    realtimeData.Date,
+			Link:    "https://finance.yahoo.com/quote/DX-Y.NYB",
+			HasData: true,
+		})
 	}
 	
-	if err == nil && fredData != nil {
-		officialValue = fredData.Value
-		officialDate = fredData.Date
-		hasOfficial = true
-		
-		// Get last 30 days for chart
-		dataPoints, _ = s.store.GetRecentPoints("DTWEXBGS", 30)
+	// 2. Official FRED USD Index
+	if fredData, _ := s.store.GetLatestPoint("DTWEXBGS"); fredData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "📊 Nominal Broad U.S. Dollar Index",
+			Value:   fmt.Sprintf("%.2f", fredData.Value),
+			Source:  "FRED DTWEXBGS",
+			Date:    fredData.Date,
+			Link:    "https://fred.stlouisfed.org/series/DTWEXBGS",
+			HasData: true,
+		})
+	}
+	
+	// 3. IMF COFER CNY Reserve Share
+	if coferData, _ := s.store.GetLatestPoint("COFER_CNY"); coferData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "💰 CNY Global Reserve Share",
+			Value:   fmt.Sprintf("%.2f%%", coferData.Value),
+			Source:  "IMF COFER",
+			Date:    coferData.Date,
+			Link:    "https://data.imf.org/?sk=E6A5F467-C14B-4AA8-9F6D-5A09EC4E62A4",
+			HasData: true,
+		})
+	}
+	
+	// 4. SWIFT RMB Payment Share
+	if swiftData, _ := s.store.GetLatestPoint("SWIFT_RMB"); swiftData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "💳 RMB Global Payment Share",
+			Value:   fmt.Sprintf("%.2f%%", swiftData.Value),
+			Source:  "SWIFT RMB Tracker",
+			Date:    swiftData.Date,
+			Link:    "https://www.swift.com/swift-resource/248201/download",
+			HasData: true,
+		})
+	}
+	
+	// 5. CIPS Participants
+	if cipsData, _ := s.store.GetLatestPoint("CIPS_PARTICIPANTS"); cipsData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "🌐 CIPS Network Participants",
+			Value:   fmt.Sprintf("%.0f", cipsData.Value),
+			Source:  "CIPS",
+			Date:    cipsData.Date,
+			Link:    "https://www.cips.com.cn/en/index/index.html",
+			HasData: true,
+		})
+	}
+	
+	// 6. World Gold Council CB Purchases
+	if wgcData, _ := s.store.GetLatestPoint("WGC_CB_PURCHASES"); wgcData != nil {
+		cards = append(cards, DataSourceCard{
+			Label:   "🥇 Central Bank Gold Purchases",
+			Value:   fmt.Sprintf("%.0f tonnes", wgcData.Value),
+			Source:  "World Gold Council",
+			Date:    wgcData.Date,
+			Link:    "https://www.gold.org/goldhub/research/gold-demand-trends",
+			HasData: true,
+		})
 	}
 
-	// Convert data points to JSON for JavaScript
-	dataPointsJSON, _ := json.Marshal(dataPoints)
+	// Get chart data
+	var dataPointsJSON template.JS
+	if dataPoints, _ := s.store.GetRecentPoints("DTWEXBGS", 30); len(dataPoints) > 0 {
+		pointsBytes, _ := json.Marshal(dataPoints)
+		dataPointsJSON = template.JS(pointsBytes)
+	}
 
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 	
 	data := struct {
-		RealtimeValue  float64
-		RealtimeDate   string
-		OfficialValue  float64
-		OfficialDate   string
-		HasRealtime    bool
-		HasOfficial    bool
+		Cards          []DataSourceCard
 		DataPointsJSON template.JS
+		HasData        bool
 	}{
-		RealtimeValue:  realtimeValue,
-		RealtimeDate:   realtimeDate,
-		OfficialValue:  officialValue,
-		OfficialDate:   officialDate,
-		HasRealtime:    hasRealtime,
-		HasOfficial:    hasOfficial,
-		DataPointsJSON: template.JS(dataPointsJSON),
+		Cards:          cards,
+		DataPointsJSON: dataPointsJSON,
+		HasData:        len(cards) > 0,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
