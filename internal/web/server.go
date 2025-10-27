@@ -280,8 +280,8 @@ const homeTemplate = `<!DOCTYPE html>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     
-    <!-- Defer non-critical Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    <!-- Load Chart.js (needed for both main chart and sparklines) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Critical CSS inlined above the fold -->
     <style>
@@ -833,15 +833,17 @@ const homeTemplate = `<!DOCTYPE html>
 
     {{if .DataPointsJSON}}
     <script>
-        // Prepare chart data
-        const chartData = {{.DataPointsJSON}};
-        if (chartData && chartData.length > 0) {
+        // Prepare chart data and render when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartData = {{.DataPointsJSON}};
+            if (!chartData || chartData.length === 0 || typeof Chart === 'undefined') return;
+            
             const labels = chartData.map(d => d.Date).reverse();
             const values = chartData.map(d => d.Value).reverse();
 
-        // Create chart
-        const ctx = document.getElementById('usdChart').getContext('2d');
-        new Chart(ctx, {
+            // Create chart
+            const ctx = document.getElementById('usdChart').getContext('2d');
+            new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -885,7 +887,7 @@ const homeTemplate = `<!DOCTYPE html>
                 }
             }
         });
-        }
+        });
     </script>
     {{end}}
     
