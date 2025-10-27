@@ -666,7 +666,12 @@ const homeTemplate = `<!DOCTYPE html>
         <div class="hero-stats">
             {{range .Cards}}
             <div class="stat-card">
-                <div class="stat-label">{{.Label}}</div>
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-1);">
+                    <div class="stat-label">{{.Label}}</div>
+                    <div style="background: rgba(102, 126, 234, 0.1); color: #667eea; padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 600; white-space: nowrap;">
+                        {{.Source}}
+                    </div>
+                </div>
                 <div class="stat-value">
                     {{.Value}}
                     {{if .Delta}}
