@@ -86,7 +86,7 @@ func main() {
 		port = "8080"
 	}
 
-	webServer := web.NewServer(db, port, cfg.StripeSecretKey)
+	webServer := web.NewServer(db, port, cfg.StripeSecretKey, cfg.StripePriceProMonthly, cfg.StripePriceProAnnual)
 	go func() {
 		if err := webServer.Start(); err != nil {
 			util.ErrorLogger.Printf("Web server error: %v", err)

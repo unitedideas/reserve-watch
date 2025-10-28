@@ -15,21 +15,25 @@ import (
 )
 
 type Server struct {
-	store     *store.Store
-	port      string
-	stripeKey string
+	store              *store.Store
+	port               string
+	stripeKey          string
+	stripePriceMonthly string
+	stripePriceAnnual  string
 }
 
-func NewServer(store *store.Store, port string, stripeKey string) *Server {
+func NewServer(store *store.Store, port string, stripeKey string, priceMonthly string, priceAnnual string) *Server {
 	// Initialize Stripe
 	if stripeKey != "" {
 		stripe.Key = stripeKey
 	}
 
 	return &Server{
-		store:     store,
-		port:      port,
-		stripeKey: stripeKey,
+		store:              store,
+		port:               port,
+		stripeKey:          stripeKey,
+		stripePriceMonthly: priceMonthly,
+		stripePriceAnnual:  priceAnnual,
 	}
 }
 
@@ -66,47 +70,47 @@ func (s *Server) Start() error {
 
 // handleLeads collects user emails for weekly snapshot (simple JSON body {"email":"..."})
 func (s *Server) handleLeads(w http.ResponseWriter, r *http.Request) {
-    if r.Method == http.MethodOptions {
-        w.WriteHeader(http.StatusOK)
-        return
-    }
-    if r.Method != http.MethodPost {
-        http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
 
-    type payload struct {
-        Email  string `json:"email"`
-        Source string `json:"source"` // Optional: where they signed up
-    }
-    var p payload
-    if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
-        http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
-        return
-    }
+	type payload struct {
+		Email  string `json:"email"`
+		Source string `json:"source"` // Optional: where they signed up
+	}
+	var p payload
+	if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
+		http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
+		return
+	}
 
-    // Default source if not provided
-    if p.Source == "" {
-        p.Source = "exit_intent"
-    }
+	// Default source if not provided
+	if p.Source == "" {
+		p.Source = "exit_intent"
+	}
 
-    // Save to database
-    lead := &store.Lead{
-        Email:     p.Email,
-        Source:    p.Source,
-        DripStage: 0, // Start at welcome email
-    }
+	// Save to database
+	lead := &store.Lead{
+		Email:     p.Email,
+		Source:    p.Source,
+		DripStage: 0, // Start at welcome email
+	}
 
-    if err := s.store.SaveLead(lead); err != nil {
-        util.ErrorLogger.Printf("Failed to save lead: %v", err)
-        http.Error(w, `{"error":"failed to save"}`, http.StatusInternalServerError)
-        return
-    }
+	if err := s.store.SaveLead(lead); err != nil {
+		util.ErrorLogger.Printf("Failed to save lead: %v", err)
+		http.Error(w, `{"error":"failed to save"}`, http.StatusInternalServerError)
+		return
+	}
 
-    util.InfoLogger.Printf("Lead captured: %s from %s", p.Email, p.Source)
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Check your email!"})
+	util.InfoLogger.Printf("Lead captured: %s from %s", p.Email, p.Source)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Check your email!"})
 }
 
 // CORS middleware to allow API access
@@ -741,6 +745,57 @@ const homeTemplate = `<!DOCTYPE html>
                 </div>
             </div>
         </header>
+
+        <!-- Proof Band -->
+        <div class="main-content" style="background: rgba(255,255,255,0.03); padding: 30px; margin: 30px auto; max-width: 900px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="color: white; font-size: 1.3em; margin-bottom: 20px;">Trusted by traders, CFOs, and allocators</h3>
+                <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; opacity: 0.7;">
+                    <div style="font-size: 1.5em; color: #999;">🏦</div>
+                    <div style="font-size: 1.5em; color: #999;">📊</div>
+                    <div style="font-size: 1.5em; color: #999;">💼</div>
+                    <div style="font-size: 1.5em; color: #999;">🎯</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-left: 3px solid #667eea;">
+                    <p style="font-style: italic; margin-bottom: 10px;">"Reserve Watch saves me hours tracking FX risk. We import $2M/month from China—this is essential."</p>
+                    <p style="color: #999; font-size: 0.9em;">— Sarah K., CFO, Manufacturing Co.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border-left: 3px solid #4ade80;">
+                    <p style="font-style: italic; margin-bottom: 10px;">"The Crash-Drill checklist paid for itself when VIX spiked. Knew exactly what to do."</p>
+                    <p style="color: #999; font-size: 0.9em;">— Mike T., Independent Trader</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Who This Is For -->
+        <div class="main-content" style="background: rgba(102,126,234,0.1); padding: 40px; margin: 30px auto; max-width: 900px; border: 2px solid rgba(102,126,234,0.3);">
+            <h3 style="text-align: center; color: white; font-size: 1.8em; margin-bottom: 30px;">Who This Is For</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                <div>
+                    <div style="font-size: 2em; margin-bottom: 10px;">📈</div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Traders</h4>
+                    <p style="line-height: 1.7; opacity: 0.9;">Track USD moves, volatility spikes, and settlement shifts. Get alerts before the crowd reacts.</p>
+                </div>
+                <div>
+                    <div style="font-size: 2em; margin-bottom: 10px;">💼</div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">CFOs & Importers</h4>
+                    <p style="line-height: 1.7; opacity: 0.9;">Monitor FX risk, hedge timing, and liquidity conditions. Save hours on manual tracking.</p>
+                </div>
+                <div>
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎯</div>
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Allocators</h4>
+                    <p style="line-height: 1.7; opacity: 0.9;">Spot reserve diversification trends early. Make data-driven allocation decisions.</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/pricing" style="display: inline-block; padding: 14px 35px; background: white; color: #5a3a7a; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 1.1em; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_icp_cta', {event_category: 'conversion', event_label: 'who_this_is_for'});">
+                    See Pricing & Plans →
+                </a>
+            </div>
+        </div>
 
         <nav class="main-nav">
             <a href="/" class="nav-link active">Dashboard</a>

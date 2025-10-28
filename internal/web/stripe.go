@@ -19,11 +19,29 @@ func (s *Server) handleStripeCheckout(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request
 	var req struct {
-		PriceID string `json:"price_id"`
-		Plan    string `json:"plan"`
+		PriceID string `json:"price_id"` // Deprecated: use plan instead
+		Plan    string `json:"plan"`     // "monthly" or "annual"
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Determine price ID based on plan
+	priceID := req.PriceID // Fallback to legacy price_id if provided
+	if req.Plan == "annual" && s.stripePriceAnnual != "" {
+		priceID = s.stripePriceAnnual
+	} else if req.Plan == "monthly" || req.Plan == "" {
+		// Default to monthly if plan not specified
+		if s.stripePriceMonthly != "" {
+			priceID = s.stripePriceMonthly
+		}
+	}
+
+	// Validate we have a price ID
+	if priceID == "" {
+		util.ErrorLogger.Printf("No Stripe price ID configured for plan: %s", req.Plan)
+		http.Error(w, "Pricing not configured", http.StatusInternalServerError)
 		return
 	}
 
@@ -38,7 +56,7 @@ func (s *Server) handleStripeCheckout(w http.ResponseWriter, r *http.Request) {
 		Mode: stripe.String(string(stripe.CheckoutSessionModeSubscription)),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				Price:    stripe.String(req.PriceID),
+				Price:    stripe.String(priceID),
 				Quantity: stripe.Int64(1),
 			},
 		},
@@ -52,6 +70,8 @@ func (s *Server) handleStripeCheckout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create checkout session", http.StatusInternalServerError)
 		return
 	}
+
+	util.InfoLogger.Printf("Created Stripe checkout for plan=%s priceID=%s", req.Plan, priceID)
 
 	// Return checkout URL
 	w.Header().Set("Content-Type", "application/json")

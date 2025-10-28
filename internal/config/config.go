@@ -20,8 +20,10 @@ type Config struct {
 	MailchimpServer     string
 	MailchimpListID     string
 
-	StripeSecretKey      string
-	StripePublishableKey string
+	StripeSecretKey       string
+	StripePublishableKey  string
+	StripePriceProMonthly string
+	StripePriceProAnnual  string
 
 	TwitterBearerToken string
 	SendGridAPIKey     string
@@ -49,8 +51,10 @@ func Load() (*Config, error) {
 		MailchimpServer:     getEnv("MAILCHIMP_SERVER_PREFIX", ""),
 		MailchimpListID:     getEnv("MAILCHIMP_LIST_ID", ""),
 
-		StripeSecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
-		StripePublishableKey: getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+		StripeSecretKey:       getEnv("STRIPE_SECRET_KEY", ""),
+		StripePublishableKey:  getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+		StripePriceProMonthly: getEnv("STRIPE_PRICE_PRO_MONTHLY", "price_1SMj0xEviKQE06yxOMB0aImp"),
+		StripePriceProAnnual:  getEnv("STRIPE_PRICE_PRO_ANNUAL", ""),
 
 		TwitterBearerToken: getEnv("TWITTER_BEARER_TOKEN", ""),
 		SendGridAPIKey:     getEnv("SENDGRID_API_KEY", ""),
