@@ -731,18 +731,31 @@ const homeTemplate = `<!DOCTYPE html>
 <body>
     <div class="container">
         <header>
-            <h1>💰 The dollar order is fracturing. Are you exposed?</h1>
-            <p class="tagline">When USD tightens and settlement shifts, margins, liquidity, and safety move fast.</p>
-            <div style="margin-top: 20px;">
-                <span class="badge">🟢 LIVE</span>
-                <span class="badge">✅ Updated Daily</span>
+            <h1>💰 Stop Reacting to USD Moves After Everyone Else</h1>
+            <p class="tagline">Get early warnings when the dollar, settlements, and volatility shift—before headlines, before losses.</p>
+            <div style="margin-top: 25px; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div>
+                        <div style="font-size: 1.8em; margin-bottom: 8px;">⏰</div>
+                        <div style="font-weight: 700; margin-bottom: 5px;">Early Warnings</div>
+                        <div style="font-size: 0.9em; opacity: 0.85;">Get alerts 6+ hours before market panic. Trade the move, not the aftermath.</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.8em; margin-bottom: 8px;">💰</div>
+                        <div style="font-weight: 700; margin-bottom: 5px;">Save Time & Money</div>
+                        <div style="font-size: 0.9em; opacity: 0.85;">Stop manual FX tracking. Auto-monitor 7+ signals in one dashboard.</div>
+                    </div>
+                </div>
             </div>
             <div style="margin-top: 30px;">
-                <a href="/pricing" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 1.2em; font-weight: 700; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_hero_cta', {event_category: 'conversion', event_label: 'hero', value: 74.99});">
-                    🚀 Start Pro - Unlock Full Access
+                <a href="/pricing" style="display: inline-block; padding: 18px 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 10px; font-size: 1.3em; font-weight: 700; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_hero_cta', {event_category: 'conversion', event_label: 'hero', value: 74.99});">
+                    Get Alerts Before the Crowd →
                 </a>
-                <div style="margin-top: 12px; font-size: 0.9em; opacity: 0.8;">
-                    <span>Get exact values, full charts, alerts & playbooks • $74.99/mo</span>
+                <div style="margin-top: 15px; font-size: 1em; opacity: 0.85;">
+                    <span>Real-time signals • Custom alerts • Crash playbooks</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.9em; opacity: 0.7;">
+                    <span>$74.99/mo • Cancel anytime • 14-day guarantee</span>
                 </div>
             </div>
         </header>
@@ -832,6 +845,65 @@ const homeTemplate = `<!DOCTYPE html>
                 <a href="/pricing" style="display: inline-block; padding: 14px 35px; background: white; color: #5a3a7a; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 1.1em; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_icp_cta', {event_category: 'conversion', event_label: 'who_this_is_for'});">
                     See Pricing & Plans →
                 </a>
+            </div>
+        </div>
+
+        <!-- Problem → Solution -->
+        <div class="main-content" style="background: rgba(255,255,255,0.03); padding: 45px; margin: 30px auto; max-width: 1000px; border: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="text-align: center; color: white; font-size: 2em; margin-bottom: 40px;">The Problems We Solve</h3>
+            
+            <div style="display: grid; gap: 30px;">
+                <!-- Problem 1: Late to moves -->
+                <div style="display: grid; grid-template-columns: 1fr 50px 1fr; gap: 25px; align-items: center; background: rgba(255,255,255,0.03); padding: 30px; border-radius: 15px;">
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #ef4444;">❌ The Problem</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">You React Too Late</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">"By the time CNBC covers the USD breakout or VIX spike, I'm already late. Entry is bad, exits are worse."</div>
+                    </div>
+                    <div style="text-align: center; font-size: 2em; color: #667eea;">→</div>
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #10b981;">✅ The Solution</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">Get 6+ Hour Early Warnings</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">Custom alerts fire when signals hit your thresholds. Trade the move while others are still asleep.</div>
+                    </div>
+                </div>
+
+                <!-- Problem 2: Manual tracking -->
+                <div style="display: grid; grid-template-columns: 1fr 50px 1fr; gap: 25px; align-items: center; background: rgba(255,255,255,0.03); padding: 30px; border-radius: 15px;">
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #ef4444;">❌ The Problem</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">Tracking Takes Hours</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">"I waste 3+ hours/week checking IMF COFER, SWIFT, FRED, WGC across 5 different sites. Still miss updates."</div>
+                    </div>
+                    <div style="text-align: center; font-size: 2em; color: #667eea;">→</div>
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #10b981;">✅ The Solution</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">One Dashboard, Auto-Updated Daily</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">7+ signals from 5 official sources in one place. Updated daily at 6 AM EST. Export to CSV/JSON in one click.</div>
+                    </div>
+                </div>
+
+                <!-- Problem 3: Unhedged losses -->
+                <div style="display: grid; grid-template-columns: 1fr 50px 1fr; gap: 25px; align-items: center; background: rgba(255,255,255,0.03); padding: 30px; border-radius: 15px;">
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #ef4444;">❌ The Problem</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">Reactive Hedging Costs More</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">"USD spiked 3% overnight. We're importing $2M/month unhedged. Margins just got crushed."</div>
+                    </div>
+                    <div style="text-align: center; font-size: 2em; color: #667eea;">→</div>
+                    <div>
+                        <div style="font-size: 1.5em; margin-bottom: 10px; color: #10b981;">✅ The Solution</div>
+                        <div style="font-weight: 700; margin-bottom: 10px; font-size: 1.1em;">Proactive FX Risk Management</div>
+                        <div style="opacity: 0.9; line-height: 1.7;">Get alerts when USD enters watch zones. Adjust hedges before costs spike. Use Crash-Drill checklist during crises.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="/pricing" style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 1.2em; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_problem_solution_cta', {event_category: 'conversion', event_label: 'problem_solution'});">
+                    Solve These Problems - Start Pro →
+                </a>
+                <div style="margin-top: 12px; font-size: 0.9em; opacity: 0.8;">$74.99/mo • 14-day guarantee • Cancel anytime</div>
             </div>
         </div>
 

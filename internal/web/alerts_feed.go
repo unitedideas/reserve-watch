@@ -250,4 +250,3 @@ const alertsFeedTemplate = `<!DOCTYPE html>
 </body>
 </html>
 `
-
