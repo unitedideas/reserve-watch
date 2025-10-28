@@ -232,10 +232,28 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Split cards into priority (top 3) and remaining
+	priorityLabels := map[string]bool{
+		"USD Index (DXY)":          true,
+		"VIX":                      true,
+		"SWIFT RMB Payments Share": true,
+	}
+	
+	var topCards, remainingCards []DataSourceCard
+	for _, card := range cards {
+		if priorityLabels[card.Label] && len(topCards) < 3 {
+			topCards = append(topCards, card)
+		} else {
+			remainingCards = append(remainingCards, card)
+		}
+	}
+
 	tmpl := template.Must(template.New("home").Parse(homeTemplate))
 
 	data := struct {
 		Cards                   []DataSourceCard
+		TopCards                []DataSourceCard
+		RemainingCards          []DataSourceCard
 		DataPointsJSON          template.JS
 		HasData                 bool
 		RMBScore                string
@@ -245,6 +263,8 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		Threats                 []ThreatItem
 	}{
 		Cards:                   cards,
+		TopCards:                topCards,
+		RemainingCards:          remainingCards,
 		DataPointsJSON:          dataPointsJSON,
 		HasData:                 len(cards) > 0,
 		RMBScore:                rmbScore,
@@ -760,6 +780,101 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
         </header>
 
+        <nav class="main-nav">
+            <a href="/" class="nav-link active">Dashboard</a>
+            <a href="/methodology" class="nav-link">Methodology</a>
+            <a href="/trigger-watch" class="nav-link">Trigger Watch</a>
+            <a href="/crash-drill" class="nav-link">Crash-Drill</a>
+            <a href="/pricing" class="nav-link">Pricing</a>
+            <a href="/api/docs" class="nav-link">API</a>
+        </nav>
+
+        <!-- Threat Bar: show top 2-3 risks with actions -->
+        {{if .Threats}}
+        <div class="main-content" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);">
+            <div style="font-weight:700; color:#ffd166;">This week's risks:</div>
+            {{range .Threats}}
+            <div style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.2); padding:8px 12px; border-radius:999px;">
+                <span class="status-badge {{if eq .Status "watch"}}status-watch{{else}}status-crisis{{end}}" style="margin:0; padding:2px 8px;">{{.Status}}</span>
+                <span style="font-size:0.9em; color:#ddd;">{{.Text}}</span>
+                {{if .Link}}
+                <a href="{{.Link}}" style="color:#fff; background:#667eea; padding:4px 10px; border-radius:999px; text-decoration:none; font-size:0.8em;">Do this now →</a>
+                {{end}}
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+
+        <!-- Top 3 Priority Signals -->
+        {{if .TopCards}}
+        <div style="max-width: 1400px; margin: 30px auto; padding: 0 20px;">
+            <h2 style="text-align: center; color: white; font-size: 2em; margin-bottom: 30px;">🔴 Live Signal Status</h2>
+            <div class="hero-stats">
+                {{range .TopCards}}
+                <div class="stat-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-1);">
+                        <div class="stat-label">{{.Label}}</div>
+                        <div style="background: rgba(102, 126, 234, 0.1); color: #667eea; padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: 600; white-space: nowrap;">
+                            {{.Source}}
+                        </div>
+                    </div>
+                    <div class="stat-value">
+                        {{.Value}}
+                        {{if .Delta}}
+                        <span style="font-size: 0.5em; margin-left: 8px; color: {{if eq (slice .Delta 0 1) "+"}}#10b981{{else}}#ef4444{{end}};">{{.Delta}}</span>
+                        {{end}}
+                    </div>
+                    
+                    {{if .SparklineData}}
+                    <div style="height: 40px; margin: 12px 0; position: relative; cursor: pointer;" onclick="window.location.href='/pricing?utm_source=tile&utm_campaign=sparkline_unlock'; if(typeof gtag !== 'undefined') gtag('event', 'click_sparkline_unlock', {event_category: 'conversion', event_label: '{{.Label}}'});">
+                        <canvas class="sparkline" data-values="{{.SparklineData}}" width="320" height="40" style="width: 100%; height: 100%; filter: blur(4px); opacity: 0.6;"></canvas>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 14px; border-radius: 6px; font-size: 0.75em; font-weight: 700; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); transition: all 0.2s;" onmouseover="this.style.transform='translate(-50%, -50%) scale(1.05)'" onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'">
+                            🔓 Unlock Chart
+                        </div>
+                    </div>
+                    {{end}}
+                    
+                    {{if .Status}}
+                    <div class="status-badge {{.StatusBadge}}" role="status" aria-live="polite">
+                        {{.Status}}
+                    </div>
+                    {{end}}
+                    
+                    {{if .Why}}
+                    <div class="status-why">{{.Why}}</div>
+                    {{end}}
+                    
+                    <div class="stat-date">
+                        <a href="{{.Link}}" target="_blank" style="color: #667eea; text-decoration: none;" rel="noopener noreferrer">
+                            {{.Source}}
+                        </a> • {{.Date}}
+                    </div>
+                    
+                    {{if .ActionLabel}}
+                    <a href="{{.ActionURL}}" class="action-button" aria-label="{{.ActionLabel}}">
+                        {{.ActionLabel}} →
+                    </a>
+                    {{end}}
+                    
+                    <!-- Freemium Upsell -->
+                    <div style="margin-top: var(--space-3); padding: var(--space-2); background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(90, 58, 122, 0.1) 100%); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: var(--radius-sm);">
+                        <div style="font-size: 0.85em; font-weight: 600; color: #667eea; margin-bottom: 6px;">🔒 Unlock Full Access</div>
+                        <div style="font-size: 0.8em; color: #555; margin-bottom: 8px;">Get exact values, full charts, alerts, and playbooks</div>
+                        <a href="/pricing" style="display: inline-block; padding: 6px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 4px; font-size: 0.8em; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_unlock_tile', {event_category: 'conversion', event_label: '{{.Label}}', value: 74.99});">
+                            Start Pro - $74.99/mo →
+                        </a>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+            <div style="text-align: center; margin: 40px 0 20px 0;">
+                <a href="#all-signals" style="display: inline-block; padding: 12px 30px; background: rgba(255,255,255,0.1); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; border: 2px solid rgba(255,255,255,0.2); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    ↓ See All 7 Signals Below
+                </a>
+            </div>
+        </div>
+        {{end}}
+
         <!-- Proof Band -->
         <div class="main-content" style="background: rgba(255,255,255,0.03); padding: 30px; margin: 30px auto; max-width: 900px; border: 1px solid rgba(255,255,255,0.08);">
             <div style="text-align: center; margin-bottom: 30px;">
@@ -907,34 +1022,12 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
         </div>
 
-        <nav class="main-nav">
-            <a href="/" class="nav-link active">Dashboard</a>
-            <a href="/methodology" class="nav-link">Methodology</a>
-            <a href="/trigger-watch" class="nav-link">Trigger Watch</a>
-            <a href="/crash-drill" class="nav-link">Crash-Drill</a>
-            <a href="/pricing" class="nav-link">Pricing</a>
-            <a href="/api/docs" class="nav-link">API</a>
-        </nav>
-
-        <!-- Threat Bar: show top 2-3 risks with actions -->
-        {{if .Threats}}
-        <div class="main-content" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);">
-            <div style="font-weight:700; color:#ffd166;">This week’s risks:</div>
-            {{range .Threats}}
-            <div style="display:flex; align-items:center; gap:8px; background: rgba(0,0,0,0.2); padding:8px 12px; border-radius:999px;">
-                <span class="status-badge {{if eq .Status "watch"}}status-watch{{else}}status-crisis{{end}}" style="margin:0; padding:2px 8px;">{{.Status}}</span>
-                <span style="font-size:0.9em; color:#ddd;">{{.Text}}</span>
-                {{if .Link}}
-                <a href="{{.Link}}" style="color:#fff; background:#667eea; padding:4px 10px; border-radius:999px; text-decoration:none; font-size:0.8em;">Do this now →</a>
-                {{end}}
-            </div>
-            {{end}}
-        </div>
-        {{end}}
-
-        {{if .HasData}}
-        <div class="hero-stats">
-            {{range .Cards}}
+        <!-- All Remaining Signals -->
+        {{if .RemainingCards}}
+        <div id="all-signals" style="max-width: 1400px; margin: 60px auto 30px auto; padding: 0 20px;">
+            <h2 style="text-align: center; color: white; font-size: 2em; margin-bottom: 30px;">📊 All De-Dollarization Signals</h2>
+            <div class="hero-stats">
+                {{range .RemainingCards}}
             <div class="stat-card">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-1);">
                     <div class="stat-label">{{.Label}}</div>
@@ -998,6 +1091,7 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
             {{end}}
         </div>
+        {{end}}
 
         <!-- Proprietary Indices Section -->
         <div class="main-content" style="background: linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); color: white; margin-top: 40px; border: 1px solid rgba(255, 255, 255, 0.2); position: relative;">
