@@ -1062,5 +1062,55 @@ const homeTemplate = `<!DOCTYPE html>
             }
         });
     </script>
+    
+    <!-- Exit-Intent Modal for Lead Capture -->
+    <div id="exitModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:linear-gradient(135deg, #4a5fb5 0%, #5a3a7a 100%); padding:40px; border-radius:20px; max-width:500px; text-align:center; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+            <button onclick="document.getElementById('exitModal').style.display='none'" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.2); border:none; color:white; font-size:24px; cursor:pointer; width:40px; height:40px; border-radius:50%; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">×</button>
+            <h2 style="color:white; margin-bottom:15px; font-size:1.8em;">Wait! Get the Sunday Snapshot</h2>
+            <p style="color:rgba(255,255,255,0.9); margin-bottom:25px; font-size:1.1em;">3 bullets + 1 chart + 1 action. Every Sunday. Free.</p>
+            <form id="exitForm" onsubmit="return captureEmail(event)" style="display:flex; gap:10px; flex-direction:column;">
+                <input type="email" id="exitEmail" required placeholder="Your email" style="padding:15px 20px; border:none; border-radius:10px; font-size:1em; width:100%;">
+                <button type="submit" style="padding:15px 40px; background:#4CAF50; color:white; border:none; border-radius:10px; font-size:1.1em; font-weight:700; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">Get Sunday Snapshot →</button>
+            </form>
+            <p id="exitMessage" style="color:#4CAF50; margin-top:15px; font-weight:600; display:none;">✓ You're in! Check your email Sunday.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Exit-intent detection: show modal when mouse leaves viewport
+        let exitShown = false;
+        document.addEventListener('mouseout', function(e) {
+            if (exitShown) return;
+            if (e.clientY < 10 && e.relatedTarget == null) {
+                document.getElementById('exitModal').style.display = 'flex';
+                exitShown = true;
+                if(typeof gtag !== 'undefined') gtag('event', 'exit_intent_shown', {event_category: 'engagement'});
+            }
+        });
+        
+        async function captureEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('exitEmail').value;
+            try {
+                const resp = await fetch('/api/leads', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: email})
+                });
+                if (resp.ok) {
+                    document.getElementById('exitMessage').style.display = 'block';
+                    document.getElementById('exitForm').style.display = 'none';
+                    if(typeof gtag !== 'undefined') gtag('event', 'email_capture', {event_category: 'conversion', event_label: 'exit_intent'});
+                    setTimeout(() => document.getElementById('exitModal').style.display = 'none', 3000);
+                } else {
+                    alert('Something went wrong. Try again?');
+                }
+            } catch(err) {
+                alert('Network error. Please try again.');
+            }
+            return false;
+        }
+    </script>
 </body>
 </html>`
