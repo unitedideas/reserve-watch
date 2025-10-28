@@ -238,7 +238,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		"VIX":                      true,
 		"SWIFT RMB Payments Share": true,
 	}
-	
+
 	var topCards, remainingCards []DataSourceCard
 	for _, card := range cards {
 		if priorityLabels[card.Label] && len(topCards) < 3 {
@@ -1127,6 +1127,7 @@ const homeTemplate = `<!DOCTYPE html>
             </p>
         </div>
 
+        {{if .DataPointsJSON}}
         <div class="main-content">
             <h2 style="text-align: center; margin-bottom: 30px;">📊 USD Index Historical Trend (Last 30 Days)</h2>
             <div class="chart-container">
