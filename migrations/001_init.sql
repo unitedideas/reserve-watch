@@ -24,4 +24,4 @@ CREATE TABLE IF NOT EXISTS posts (
     status TEXT DEFAULT 'draft'
 );
 
-CREATE INDEX idx_posts_platform ON posts(platform, published_at);
+CREATE INDEX IF NOT EXISTS idx_posts_platform ON posts(platform, published_at);
