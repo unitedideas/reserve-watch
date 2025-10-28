@@ -48,7 +48,6 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/docs", s.handleAPIDocs)
 	mux.HandleFunc("/api/leads", s.handleLeads)
 	mux.HandleFunc("/api/stripe/checkout", s.handleStripeCheckout)
-	mux.HandleFunc("/api/leads", s.handleLeads)
 	mux.HandleFunc("/api/latest", s.handleAPILatest)
 	mux.HandleFunc("/api/latest/realtime", s.handleAPIRealtimeLatest)
 	mux.HandleFunc("/api/history", s.handleAPIHistory)
@@ -59,7 +58,6 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/export/json", s.handleExportJSON)
 	mux.HandleFunc("/api/export/all", s.handleExportAll)
 	mux.HandleFunc("/api/signals/latest", s.handleAPISignals)
-	mux.HandleFunc("/api/leads", s.handleLeads)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
