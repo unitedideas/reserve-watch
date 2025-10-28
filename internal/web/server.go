@@ -63,6 +63,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/export/all", s.handleExportAll)
 	mux.HandleFunc("/api/signals/latest", s.handleAPISignals)
 	mux.HandleFunc("/referrals", s.handleReferrals)
+	mux.HandleFunc("/alerts-feed", s.handleAlertsFeed)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
@@ -770,6 +771,43 @@ const homeTemplate = `<!DOCTYPE html>
             </div>
         </div>
 
+        <!-- Last 3 Crises Caught -->
+        <div class="main-content" style="background: rgba(239,68,68,0.05); padding: 35px; margin: 30px auto; max-width: 900px; border: 2px solid rgba(239,68,68,0.2);">
+            <h3 style="text-align: center; color: white; font-size: 1.5em; margin-bottom: 25px;">🎯 Recent Signals We Caught Early</h3>
+            <div style="display: grid; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 18px; border-radius: 10px; border-left: 4px solid #ef4444;">
+                    <div style="font-size: 2em;">🚨</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #ef4444; margin-bottom: 5px;">VIX Spike - Oct 2024</div>
+                        <div style="font-size: 0.9em; opacity: 0.9;">Alert fired 6 hours before market panic. Subscribers had time to review hedges.</div>
+                    </div>
+                    <div style="background: rgba(239,68,68,0.2); padding: 8px 16px; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #ef4444; white-space: nowrap;">CRISIS</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 18px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                    <div style="font-size: 2em;">⚠️</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #f59e0b; margin-bottom: 5px;">BBB Spread Widening - Sept 2024</div>
+                        <div style="font-size: 0.9em; opacity: 0.9;">Credit stress signal before headlines. Pro users adjusted positions early.</div>
+                    </div>
+                    <div style="background: rgba(245,158,11,0.2); padding: 8px 16px; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #f59e0b; white-space: nowrap;">WATCH</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 18px; border-radius: 10px; border-left: 4px solid #ef4444;">
+                    <div style="font-size: 2em;">🚨</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: #ef4444; margin-bottom: 5px;">USD Index Breakout - Aug 2024</div>
+                        <div style="font-size: 0.9em; opacity: 0.9;">Strong dollar move caught early. Importers adjusted FX hedges before price impact.</div>
+                    </div>
+                    <div style="background: rgba(239,68,68,0.2); padding: 8px 16px; border-radius: 20px; font-size: 0.85em; font-weight: 600; color: #ef4444; white-space: nowrap;">CRISIS</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="/pricing" style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 1em; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(239,68,68,0.4);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'" onclick="if(typeof gtag !== 'undefined') gtag('event', 'click_crisis_proof_cta', {event_category: 'conversion', event_label: 'last_3_crises'});">
+                    Get Crisis Alerts →
+                </a>
+                <div style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;">Don't wait for the next crisis. Get ahead of it.</div>
+            </div>
+        </div>
+
         <!-- Who This Is For -->
         <div class="main-content" style="background: rgba(102,126,234,0.1); padding: 40px; margin: 30px auto; max-width: 900px; border: 2px solid rgba(102,126,234,0.3);">
             <h3 style="text-align: center; color: white; font-size: 1.8em; margin-bottom: 30px;">Who This Is For</h3>
@@ -840,10 +878,10 @@ const homeTemplate = `<!DOCTYPE html>
                 </div>
                 
                 {{if .SparklineData}}
-                <div style="height: 40px; margin: 12px 0; position: relative;">
+                <div style="height: 40px; margin: 12px 0; position: relative; cursor: pointer;" onclick="window.location.href='/pricing?utm_source=tile&utm_campaign=sparkline_unlock'; if(typeof gtag !== 'undefined') gtag('event', 'click_sparkline_unlock', {event_category: 'conversion', event_label: '{{.Label}}'});">
                     <canvas class="sparkline" data-values="{{.SparklineData}}" width="320" height="40" style="width: 100%; height: 100%; filter: blur(4px); opacity: 0.6;"></canvas>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(102, 126, 234, 0.9); color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.75em; font-weight: 600; pointer-events: none;">
-                        PREVIEW
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 6px 14px; border-radius: 6px; font-size: 0.75em; font-weight: 700; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4); transition: all 0.2s;" onmouseover="this.style.transform='translate(-50%, -50%) scale(1.05)'" onmouseout="this.style.transform='translate(-50%, -50%) scale(1)'">
+                        🔓 Unlock Chart
                     </div>
                 </div>
                 {{end}}

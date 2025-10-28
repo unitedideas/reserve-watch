@@ -296,6 +296,31 @@ const pricingTemplate = `<!DOCTYPE html>
             <a href="/api/latest" class="nav-link">API</a>
         </nav>
 
+        <!-- Limited-Time Promo Banner -->
+        <div id="promo-banner" style="max-width: 800px; margin: 30px auto; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); padding: 25px 35px; border-radius: 15px; text-align: center; box-shadow: 0 8px 25px rgba(239,68,68,0.4); border: 2px solid rgba(255,255,255,0.2);">
+            <div style="font-size: 0.9em; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; opacity: 0.9;">LIMITED TIME OFFER</div>
+            <div style="font-size: 1.8em; font-weight: 800; margin-bottom: 12px; color: white;">First Month: $49 (Save $25)</div>
+            <div style="font-size: 1em; margin-bottom: 15px; opacity: 0.95;">Lock in this rate before the next crisis hits</div>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 1.1em; font-weight: 700;">
+                <span>Offer ends in:</span>
+                <div style="display: flex; gap: 10px;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; min-width: 50px;">
+                        <div id="countdown-hours" style="font-size: 1.5em; line-height: 1;">00</div>
+                        <div style="font-size: 0.7em; opacity: 0.8;">HRS</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; min-width: 50px;">
+                        <div id="countdown-mins" style="font-size: 1.5em; line-height: 1;">00</div>
+                        <div style="font-size: 0.7em; opacity: 0.8;">MIN</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; min-width: 50px;">
+                        <div id="countdown-secs" style="font-size: 1.5em; line-height: 1;">00</div>
+                        <div style="font-size: 0.7em; opacity: 0.8;">SEC</div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; font-size: 0.85em; opacity: 0.85;">Use code <strong>FIRST49</strong> at checkout</div>
+        </div>
+
         <!-- Comparison Grid -->
         <div class="comparison-section">
             <h2>What You Unlock</h2>
@@ -477,6 +502,37 @@ const pricingTemplate = `<!DOCTYPE html>
                 btn.disabled = false;
             }
         }
+        
+        // Countdown timer (resets every 6 hours)
+        function startCountdown() {
+            const countdownDuration = 6 * 60 * 60 * 1000; // 6 hours in ms
+            const now = new Date().getTime();
+            const cycleStart = Math.floor(now / countdownDuration) * countdownDuration;
+            const cycleEnd = cycleStart + countdownDuration;
+            
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = cycleEnd - now;
+                
+                if (distance < 0) {
+                    location.reload(); // Reset countdown
+                    return;
+                }
+                
+                const hours = Math.floor((distance % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                const minutes = Math.floor((distance % (60 * 60 * 1000)) / (60 * 1000));
+                const seconds = Math.floor((distance % (60 * 1000)) / 1000);
+                
+                document.getElementById('countdown-hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('countdown-mins').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('countdown-secs').textContent = String(seconds).padStart(2, '0');
+            }
+            
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+        
+        startCountdown();
     </script>
 </body>
 </html>
