@@ -58,6 +58,7 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/export/json", s.handleExportJSON)
 	mux.HandleFunc("/api/export/all", s.handleExportAll)
 	mux.HandleFunc("/api/signals/latest", s.handleAPISignals)
+	mux.HandleFunc("/referrals", s.handleReferrals)
 
 	util.InfoLogger.Printf("Web server starting on port %s", s.port)
 	return http.ListenAndServe(":"+s.port, s.corsMiddleware(mux))
@@ -65,29 +66,47 @@ func (s *Server) Start() error {
 
 // handleLeads collects user emails for weekly snapshot (simple JSON body {"email":"..."})
 func (s *Server) handleLeads(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	if r.Method != http.MethodPost {
-		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
-		return
-	}
+    if r.Method == http.MethodOptions {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+    if r.Method != http.MethodPost {
+        http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+        return
+    }
 
-	type payload struct {
-		Email string `json:"email"`
-	}
-	var p payload
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
-		http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
-		return
-	}
+    type payload struct {
+        Email  string `json:"email"`
+        Source string `json:"source"` // Optional: where they signed up
+    }
+    var p payload
+    if err := json.NewDecoder(r.Body).Decode(&p); err != nil || p.Email == "" {
+        http.Error(w, `{"error":"invalid email"}`, http.StatusBadRequest)
+        return
+    }
 
-	// For now, just log and acknowledge. Future: persist to DB/leads table.
-	util.InfoLogger.Printf("Lead captured: %s", p.Email)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+    // Default source if not provided
+    if p.Source == "" {
+        p.Source = "exit_intent"
+    }
+
+    // Save to database
+    lead := &store.Lead{
+        Email:     p.Email,
+        Source:    p.Source,
+        DripStage: 0, // Start at welcome email
+    }
+
+    if err := s.store.SaveLead(lead); err != nil {
+        util.ErrorLogger.Printf("Failed to save lead: %v", err)
+        http.Error(w, `{"error":"failed to save"}`, http.StatusInternalServerError)
+        return
+    }
+
+    util.InfoLogger.Printf("Lead captured: %s from %s", p.Email, p.Source)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Check your email!"})
 }
 
 // CORS middleware to allow API access

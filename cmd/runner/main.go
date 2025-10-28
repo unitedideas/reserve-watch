@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"reserve-watch/internal/agents"
 	"reserve-watch/internal/alerts"
 	"reserve-watch/internal/compose"
 	"reserve-watch/internal/config"
@@ -91,6 +92,10 @@ func main() {
 			util.ErrorLogger.Printf("Web server error: %v", err)
 		}
 	}()
+
+	// Start marketing automation agents
+	agentScheduler := agents.NewScheduler(cfg, db)
+	agentScheduler.Start()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)

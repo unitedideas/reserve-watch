@@ -51,6 +51,41 @@ type AlertHistory struct {
 	WebhookStatus string
 }
 
+type Lead struct {
+	ID              int64
+	Email           string
+	Source          string
+	CapturedAt      time.Time
+	LastEmailSentAt *time.Time
+	DripStage       int
+	ConvertedAt     *time.Time
+	UnsubscribedAt  *time.Time
+	Metadata        string
+}
+
+type Referral struct {
+	ID               int64
+	ReferrerEmail    string
+	ReferredEmail    string
+	ReferralCode     string
+	Status           string
+	ReferredAt       time.Time
+	ConvertedAt      *time.Time
+	CreditedAt       *time.Time
+	CreditAmountCents int
+}
+
+type SocialPost struct {
+	ID              int64
+	Platform        string
+	SignalKey       string
+	SignalStatus    string
+	Content         string
+	PostedAt        time.Time
+	PostID          string
+	EngagementCount int
+}
+
 type Store struct {
 	db *sql.DB
 }
@@ -308,6 +343,198 @@ VALUES (?, ?, ?, ?, ?)
 
 	history.ID, _ = result.LastInsertId()
 	return nil
+}
+
+// SaveLead creates or updates a lead
+func (s *Store) SaveLead(lead *Lead) error {
+	result, err := s.db.Exec(`
+INSERT INTO leads (email, source, drip_stage, metadata)
+VALUES (?, ?, ?, ?)
+ON CONFLICT(email) DO UPDATE SET
+source = excluded.source,
+metadata = excluded.metadata
+`, lead.Email, lead.Source, lead.DripStage, lead.Metadata)
+
+	if err != nil {
+		return err
+	}
+
+	lead.ID, _ = result.LastInsertId()
+	return nil
+}
+
+// GetLeadsForDrip gets leads ready for next drip email
+func (s *Store) GetLeadsForDrip(stage int, hoursSinceCaptured int) ([]Lead, error) {
+	rows, err := s.db.Query(`
+SELECT id, email, source, captured_at, last_email_sent_at, drip_stage, converted_at, unsubscribed_at, metadata
+FROM leads
+WHERE drip_stage = ? 
+  AND unsubscribed_at IS NULL 
+  AND converted_at IS NULL
+  AND datetime(captured_at, '+' || ? || ' hours') <= datetime('now')
+ORDER BY captured_at ASC
+LIMIT 100
+`, stage, hoursSinceCaptured)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var leads []Lead
+	for rows.Next() {
+		var l Lead
+		var lastEmailSent, convertedAt, unsubscribedAt sql.NullString
+
+		if err := rows.Scan(&l.ID, &l.Email, &l.Source, &l.CapturedAt, &lastEmailSent, &l.DripStage, &convertedAt, &unsubscribedAt, &l.Metadata); err != nil {
+			return nil, err
+		}
+
+		if lastEmailSent.Valid {
+			t, _ := time.Parse(time.RFC3339, lastEmailSent.String)
+			l.LastEmailSentAt = &t
+		}
+		if convertedAt.Valid {
+			t, _ := time.Parse(time.RFC3339, convertedAt.String)
+			l.ConvertedAt = &t
+		}
+		if unsubscribedAt.Valid {
+			t, _ := time.Parse(time.RFC3339, unsubscribedAt.String)
+			l.UnsubscribedAt = &t
+		}
+
+		leads = append(leads, l)
+	}
+
+	return leads, nil
+}
+
+// UpdateLeadDripStage updates drip stage and last email sent time
+func (s *Store) UpdateLeadDripStage(leadID int64, stage int) error {
+	_, err := s.db.Exec(`
+UPDATE leads
+SET drip_stage = ?, last_email_sent_at = datetime('now')
+WHERE id = ?
+`, stage, leadID)
+	return err
+}
+
+// CreateReferral creates a new referral
+func (s *Store) CreateReferral(ref *Referral) error {
+	result, err := s.db.Exec(`
+INSERT INTO referrals (referrer_email, referred_email, referral_code, status, credit_amount_cents)
+VALUES (?, ?, ?, ?, ?)
+`, ref.ReferrerEmail, ref.ReferredEmail, ref.ReferralCode, ref.Status, ref.CreditAmountCents)
+
+	if err != nil {
+		return err
+	}
+
+	ref.ID, _ = result.LastInsertId()
+	return nil
+}
+
+// GetReferralByCode gets referral by code
+func (s *Store) GetReferralByCode(code string) (*Referral, error) {
+	var ref Referral
+	var convertedAt, creditedAt sql.NullString
+
+	err := s.db.QueryRow(`
+SELECT id, referrer_email, referred_email, referral_code, status, referred_at, converted_at, credited_at, credit_amount_cents
+FROM referrals
+WHERE referral_code = ?
+`, code).Scan(&ref.ID, &ref.ReferrerEmail, &ref.ReferredEmail, &ref.ReferralCode, &ref.Status, &ref.ReferredAt, &convertedAt, &creditedAt, &ref.CreditAmountCents)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	if convertedAt.Valid {
+		t, _ := time.Parse(time.RFC3339, convertedAt.String)
+		ref.ConvertedAt = &t
+	}
+	if creditedAt.Valid {
+		t, _ := time.Parse(time.RFC3339, creditedAt.String)
+		ref.CreditedAt = &t
+	}
+
+	return &ref, nil
+}
+
+// GetUserReferrals gets all referrals for a user
+func (s *Store) GetUserReferrals(email string) ([]Referral, error) {
+	rows, err := s.db.Query(`
+SELECT id, referrer_email, referred_email, referral_code, status, referred_at, converted_at, credited_at, credit_amount_cents
+FROM referrals
+WHERE referrer_email = ?
+ORDER BY referred_at DESC
+`, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var refs []Referral
+	for rows.Next() {
+		var ref Referral
+		var convertedAt, creditedAt sql.NullString
+
+		if err := rows.Scan(&ref.ID, &ref.ReferrerEmail, &ref.ReferredEmail, &ref.ReferralCode, &ref.Status, &ref.ReferredAt, &convertedAt, &creditedAt, &ref.CreditAmountCents); err != nil {
+			return nil, err
+		}
+
+		if convertedAt.Valid {
+			t, _ := time.Parse(time.RFC3339, convertedAt.String)
+			ref.ConvertedAt = &t
+		}
+		if creditedAt.Valid {
+			t, _ := time.Parse(time.RFC3339, creditedAt.String)
+			ref.CreditedAt = &t
+		}
+
+		refs = append(refs, ref)
+	}
+
+	return refs, nil
+}
+
+// SaveSocialPost logs a social media post
+func (s *Store) SaveSocialPost(post *SocialPost) error {
+	result, err := s.db.Exec(`
+INSERT INTO social_posts (platform, signal_key, signal_status, content, post_id)
+VALUES (?, ?, ?, ?, ?)
+`, post.Platform, post.SignalKey, post.SignalStatus, post.Content, post.PostID)
+
+	if err != nil {
+		return err
+	}
+
+	post.ID, _ = result.LastInsertId()
+	return nil
+}
+
+// GetLastSocialPost gets the last post for a signal to prevent duplicates
+func (s *Store) GetLastSocialPost(signalKey, signalStatus string) (*SocialPost, error) {
+	var post SocialPost
+
+	err := s.db.QueryRow(`
+SELECT id, platform, signal_key, signal_status, content, posted_at, post_id, engagement_count
+FROM social_posts
+WHERE signal_key = ? AND signal_status = ?
+ORDER BY posted_at DESC
+LIMIT 1
+`, signalKey, signalStatus).Scan(&post.ID, &post.Platform, &post.SignalKey, &post.SignalStatus, &post.Content, &post.PostedAt, &post.PostID, &post.EngagementCount)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &post, nil
 }
 
 func (s *Store) Close() error {

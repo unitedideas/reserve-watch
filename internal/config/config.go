@@ -23,6 +23,11 @@ type Config struct {
 	StripeSecretKey      string
 	StripePublishableKey string
 
+	TwitterBearerToken string
+	SendGridAPIKey     string
+	SendGridFromEmail  string
+	SendGridFromName   string
+
 	PublishLinkedIn  bool
 	PublishMailchimp bool
 	AutoPublish      bool
@@ -46,6 +51,11 @@ func Load() (*Config, error) {
 
 		StripeSecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
 		StripePublishableKey: getEnv("STRIPE_PUBLISHABLE_KEY", ""),
+
+		TwitterBearerToken: getEnv("TWITTER_BEARER_TOKEN", ""),
+		SendGridAPIKey:     getEnv("SENDGRID_API_KEY", ""),
+		SendGridFromEmail:  getEnv("SENDGRID_FROM_EMAIL", "alerts@reserve.watch"),
+		SendGridFromName:   getEnv("SENDGRID_FROM_NAME", "Reserve Watch"),
 
 		PublishLinkedIn:  getEnvBool("PUBLISH_LINKEDIN", false),
 		PublishMailchimp: getEnvBool("PUBLISH_MAILCHIMP", false),
